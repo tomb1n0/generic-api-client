@@ -91,13 +91,13 @@ class AuthenticationMiddleware implements MiddlewareContract
     }
 }
 
-// Create
+// Create the Client itself
 $client = new Client(
     client: new GuzzleHttpClient(), // Pass in a custom PSR-18 compliant client
     options: new Options( // Pass in various options to configure the client
-        baseUrl: 'https://dummyjson.com',
-        paginationHandler: new PaginationHandler(),
-        middleware: [new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()],
+        baseUrl: 'https://dummyjson.com', // A baseurl to use
+        paginationHandler: new PaginationHandler(), // A pagination handler, this is used to determine if a response has a next page etc
+        middleware: [new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()], // Middleware to dispatch the request through
     ),
 );
 

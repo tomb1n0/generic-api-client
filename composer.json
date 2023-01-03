@@ -1,0 +1,21 @@
+{
+    "name": "tomb1n0/generic-api-client",
+    "description": "A package to help speed up development when consuming APIs",
+    "autoload": {
+        "psr-4": {
+            "Tomb1n0\\GenericApiClient\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Tom Harper",
+            "email": "tom.harper@rareloop.com"
+        }
+    ],
+    "require": {
+        "psr/http-client": "^1.0",
+        "psr/http-message": "^1.0",
+        "guzzlehttp/guzzle": "^7.5",
+        "guzzlehttp/psr7": "^2.4"
+    }
+}

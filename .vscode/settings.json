@@ -1,0 +1,87 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.fixAll.stylelint": true
+    },
+    "prettier.enable": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "[scss]": {
+        "editor.defaultFormatter": "stylelint.vscode-stylelint"
+    },
+    "[vue]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[php]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "vetur.format.defaultFormatter.js": "none",
+    "namespaceResolver.sortOnSave": true,
+    "namespaceResolver.showMessageOnStatusBar": true,
+    "namespaceResolver.sortAlphabetically": false,
+    "stylelint.validate": ["css", "scss"],
+    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact", "html"],
+    "css.validate": false,
+    "less.validate": false,
+    "scss.validate": false,
+    "cSpell.words": [
+        "authenticatable",
+        "autosave",
+        "axios",
+        "chartership",
+        "colour",
+        "csrf",
+        "datepickers",
+        "dont",
+        "encryptable",
+        "flatpickr",
+        "initialise",
+        "interruptible",
+        "laravel",
+        "livewire",
+        "mailgun",
+        "mailhog",
+        "middlewares",
+        "mymaster",
+        "numerify",
+        "organisation",
+        "organisations",
+        "overrideable",
+        "packagejson",
+        "papertrail",
+        "papertrailapp",
+        "pecl",
+        "phpcoverage",
+        "phpcs",
+        "PHPMD",
+        "phpstan",
+        "phpunit",
+        "prettierrc",
+        "rareloop",
+        "reinitialise",
+        "reprofiling",
+        "rollbar",
+        "semibold",
+        "spatie",
+        "stylelint",
+        "templating",
+        "testsuite",
+        "timeslot",
+        "traefik",
+        "unapprove",
+        "volker",
+        "vuedraggable"
+    ],
+    "cSpell.ignorePaths": [
+        "**/package-lock.json",
+        "**/node_modules/**",
+        "**/vscode-extension/**",
+        "**/.git/objects/**",
+        ".vscode",
+        ".vscode-insiders",
+        ".prettier*"
+    ],
+    "eslint.format.enable": true
+}

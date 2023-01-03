@@ -1,0 +1,8 @@
+{
+    "composer_version": "2",
+    "php_version": "php-81",
+    "project_name": "generic-api-client",
+    "project_type": "php",
+    "scripts": [],
+    "volker_version": "0.12.9"
+}

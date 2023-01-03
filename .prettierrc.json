@@ -1,0 +1,9 @@
+{
+    "singleQuote": true,
+    "printWidth": 120,
+    "semi": true,
+    "tabWidth": 4,
+    "htmlWhitespaceSensitivity": "ignore",
+    "phpVersion": "8.1",
+    "braceStyle": "psr-2"
+}

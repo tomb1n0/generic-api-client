@@ -1,0 +1,18 @@
+# --------------------------------------------------------------- #
+# Volker PHP project                                              #
+# --------------------------------------------------------------- #
+version: '3'
+
+services:
+    app:
+        environment:
+            COMPOSER_BRANCH: 2
+            VOLKER_PROJECT_TYPE: php
+        image: rareloop/volker:php-81
+        tty: true
+        working_dir: /var/www
+        volumes:
+            # Mounts your ssh directory so you can use your existing ssh key inside the container
+            - ~/.ssh:/home/www/.ssh:delegated
+            # Using direct docker mounts
+            - ./:/var/www:delegated

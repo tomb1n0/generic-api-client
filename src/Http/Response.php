@@ -2,28 +2,31 @@
 
 namespace Tomb1n0\GenericApiClient\Http;
 
+use Illuminate\Support\Arr;
 use Tomb1n0\GenericApiClient\Options;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
 class Response
 {
     protected Client $client;
     protected RequestInterface $request;
     protected ResponseInterface $response;
-    protected Options $options;
     protected string $contents;
+    protected ?PaginationHandlerContract $paginationHandler = null;
+    protected $decoded;
 
     public function __construct(
         Client $client,
         RequestInterface $request,
         ResponseInterface $response,
-        Options $options,
+        PaginationHandlerContract $paginationHandler,
     ) {
         $this->client = $client;
         $this->request = $request;
         $this->response = $response;
-        $this->options = $options;
+        $this->paginationHandler = $paginationHandler;
 
         $this->contents = $this->response->getBody()->getContents();
     }
@@ -43,15 +46,23 @@ class Response
         return $this->contents;
     }
 
-    public function getJsonContents(): array
+    public function json(?string $key = null, $default = null): mixed
     {
-        return json_decode($this->contents, true);
+        if (!$this->decoded) {
+            $this->decoded = json_decode($this->contents, true);
+        }
+
+        if (is_null($key)) {
+            return $this->decoded;
+        }
+
+        return Arr::get($this->decoded, $key, $default);
     }
 
     public function hasNextPage(): bool
     {
-        if (isset($this->options->paginationHandler)) {
-            return $this->options->paginationHandler->hasNextPage($this);
+        if (isset($this->paginationHandler)) {
+            return $this->paginationHandler->hasNextPage($this);
         }
 
         return false;
@@ -59,8 +70,8 @@ class Response
 
     public function getNextPage(): ?Response
     {
-        if (isset($this->options->paginationHandler) && $this->hasNextPage()) {
-            $request = $this->options->paginationHandler->getNextPage($this);
+        if (isset($this->paginationHandler) && $this->hasNextPage()) {
+            $request = $this->paginationHandler->getNextPage($this);
 
             return $this->client->send($request);
         }
@@ -70,7 +81,7 @@ class Response
 
     public function forEachPage(callable $callback): void
     {
-        if (!isset($this->options->paginationHandler)) {
+        if (!isset($this->paginationHandler)) {
             return;
         }
 

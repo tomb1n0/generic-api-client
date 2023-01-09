@@ -26,6 +26,13 @@ class MiddlewareDispatcher
         $this->middleware = is_array($middleware) ? array_reverse($middleware) : [];
     }
 
+    public function withMiddleware(array $middleware = []): static
+    {
+        $this->middleware = array_reverse($middleware);
+
+        return $this;
+    }
+
     /**
      * Dispatch a callable through the middleware chain
      *

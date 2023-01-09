@@ -1,6 +1,5 @@
 <?php
 
-use Tomb1n0\GenericApiClient\Options;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Tomb1n0\GenericApiClient\Http\Client;
@@ -15,11 +14,9 @@ class PaginationHandler implements PaginationHandlerContract
 {
     public function hasNextPage(Response $response): bool
     {
-        $contents = $response->getJsonContents();
-
-        $total = isset($contents['total']) ? $contents['total'] : null;
-        $skip = isset($contents['skip']) ? $contents['skip'] : null;
-        $limit = isset($contents['limit']) ? $contents['limit'] : null;
+        $total = $response->json('total');
+        $skip = $response->json('skip');
+        $limit = $response->json('limit');
 
         if (is_null($total) || is_null($skip) || is_null($limit)) {
             return false;
@@ -91,15 +88,11 @@ class AuthenticationMiddleware implements MiddlewareContract
     }
 }
 
-// Create the Client itself
-$client = new Client(
-    client: new GuzzleHttpClient(), // Pass in a custom PSR-18 compliant client
-    options: new Options( // Pass in various options to configure the client
-        baseUrl: 'https://dummyjson.com', // A baseurl to use
-        paginationHandler: new PaginationHandler(), // A pagination handler, this is used to determine if a response has a next page etc
-        middleware: [new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()], // Middleware to dispatch the request through
-    ),
-);
+$client = (new Client())
+    ->withPsr18Client(new GuzzleHttpClient())
+    ->withBaseUrl('https://dummyjson.com')
+    ->withPaginationHandler(new PaginationHandler())
+    ->withMiddleware([new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()]);
 
 // Fetch Products
 $client
@@ -107,7 +100,8 @@ $client
         'limit' => 25,
     ])
     ->forEachPage(function (Response $response) {
-        $products = $response->getJsonContents()['products'];
+        $products = $response->json('products', []);
 
         // Do stuff with this page of products
+        // var_dump($products);
     });

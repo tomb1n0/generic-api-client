@@ -2,30 +2,37 @@
 
 namespace Tomb1n0\GenericApiClient\Http;
 
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\Utils;
+use GuzzleHttp\Psr7\HttpFactory;
+use Psr\Http\Message\UriInterface;
 use Psr\Http\Client\ClientInterface;
-use Tomb1n0\GenericApiClient\Options;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Client as GuzzleHttpClient;
-use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use Psr\Http\Message\RequestFactoryInterface;
+use Tomb1n0\GenericApiClient\Http\Traits\ClientFactoryMethods;
+use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
 class Client
 {
     protected ClientInterface $client;
-    protected Options $options;
     protected MiddlewareDispatcher $middlewareDispatcher;
+    protected RequestFactoryInterface $requestFactory;
+
+    protected ?string $baseUrl = null;
+    protected ?PaginationHandlerContract $paginationHandler = null;
+
+    use ClientFactoryMethods;
 
     /**
-     * Create a new Client
-     *
-     * @param ClientInterface $client The PSR-18 Client to utilise when making requests, if not given a Guzzle one will be used
-     * @param Options|null $options The Options to configure this client with. For available options see the Options class.
+     * Construct the defaults for a Client
      */
-    public function __construct(?ClientInterface $client = null, ?Options $options = null)
+    public function __construct()
     {
-        $this->client = $client ?? new GuzzleHttpClient();
-        $this->options = $options ?? new Options();
-        $this->middlewareDispatcher = new MiddlewareDispatcher($this->options->middleware);
+        $this->client = new GuzzleHttpClient();
+        $this->middlewareDispatcher = new MiddlewareDispatcher();
+        $this->requestFactory = new HttpFactory();
     }
 
     /**
@@ -38,22 +45,14 @@ class Client
      */
     public function json(string $method, string $url, array $params = []): Response
     {
-        /**
-         * If this isn't a GET request, put the parameters into the body.
-         *
-         * If it is a GET request, the build URL method will handle pushing these parameters into the query string
-         */
-        $body = strtolower($method) !== 'get' ? json_encode($params) : null;
+        $request = $this->requestFactory
+            ->createRequest($method, $this->buildUrl($method, $url, $params))
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Accept', 'application/json');
 
-        $request = new GuzzleRequest(
-            $method,
-            $this->buildUrl($method, $url, $params),
-            [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ],
-            $body,
-        );
+        if (strtolower($method) !== 'get') {
+            $request = $request->withBody(Utils::streamFor(json_encode($params)));
+        }
 
         return $this->send($request);
     }
@@ -66,48 +65,68 @@ class Client
      * @param array $params
      * @return Response
      */
-    public function request(string $method, string $url, array $params = []): Response
+    public function form(string $method, string $url, array $params = []): Response
     {
-        /**
-         * If this isn't a GET request, put the parameters into the body.
-         *
-         * If it is a GET request, the build URL method will handle pushing these parameters into the query string
-         */
-        $body = strtolower($method) !== 'get' ? http_build_query($params) : null;
+        $request = $this->requestFactory
+            ->createRequest($method, $this->buildUrl($method, $url, $params))
+            ->withHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-        $request = new GuzzleRequest(
-            $method,
-            $this->buildUrl($method, $url, $params),
-            [
-                'Content-Type' => 'application/x-www-form-urlencoded',
-            ],
-            $body,
-        );
+        if (strtolower($method) !== 'get') {
+            $request = $request->withBody(Utils::streamFor(http_build_query($params)));
+        }
 
         return $this->send($request);
     }
 
+    /**
+     * Actually send the request, dispatching the request through our middleware stack.
+     *
+     * This is used by the json and form methods internally, however this is public so you can send custom PSR-7 requests as needed.
+     *
+     * @param RequestInterface $request
+     * @return Response
+     */
     public function send(RequestInterface $request): Response
     {
         $response = $this->middlewareDispatcher->dispatch(function (RequestInterface $request): ResponseInterface {
             return $this->client->sendRequest($request);
         }, $request);
 
-        return new Response($this, $request, $response, $this->options);
+        return new Response($this, $request, $response, $this->paginationHandler);
     }
 
-    protected function buildUrl(string $method, string $url, array $options)
+    /**
+     * Build the URL used for the request.
+     *
+     * If this is a GET request, we will automatically add the options into the query string.
+     *
+     * @param string $method
+     * @param string $url
+     * @param array $options
+     * @return string
+     */
+    protected function buildUrl(string $method, string $url, array $options): UriInterface
     {
-        $url = $url;
+        /**
+         * Check if we were given an already valid URL.
+         *
+         * Sometimes it is useful to set a base URL for the 90% use case, and then re-use the same client for
+         * a completely different URL.
+         *
+         * Maybe there's a separate URL for fetching an access token etc.
+         */
+        $isValidUrl = filter_var($url, FILTER_VALIDATE_URL);
 
-        if (isset($this->options->baseUrl)) {
-            $url = $this->options->baseUrl . $url;
+        // If we have a base url, and we weren't given a valid URL, prefix our base url
+        if (isset($this->baseUrl) && !$isValidUrl) {
+            $url = $this->baseUrl . $url;
         }
 
+        // If we're a GET request, tack on the options as query parameters
         if (strtolower($method) === 'get') {
             $url = $url . '?' . http_build_query($options);
         }
 
-        return $url;
+        return new Uri($url);
     }
 }

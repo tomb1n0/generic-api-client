@@ -94,7 +94,7 @@ $client = (new Client())
     ->withPaginationHandler(new PaginationHandler())
     ->withMiddleware([new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()]);
 
-// Fetch Products
+// Fetch Products, and paginate them
 $client
     ->json('GET', '/products', [
         'limit' => 25,

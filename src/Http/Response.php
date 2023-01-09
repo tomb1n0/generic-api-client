@@ -59,6 +59,41 @@ class Response
         return Arr::get($this->decoded, $key, $default);
     }
 
+    public function status(): int
+    {
+        return $this->response->getStatusCode();
+    }
+
+    public function reason(): string
+    {
+        return $this->response->getReasonPhrase();
+    }
+
+    public function successful(): bool
+    {
+        return $this->status() >= 200 && $this->status() < 300;
+    }
+
+    public function ok(): bool
+    {
+        return $this->status() === 200;
+    }
+
+    public function redirect(): bool
+    {
+        return $this->status() >= 300 && $this->status() < 400;
+    }
+
+    public function unauthorized()
+    {
+        return $this->status() === 401;
+    }
+
+    public function forbidden()
+    {
+        return $this->status() === 403;
+    }
+
     public function hasNextPage(): bool
     {
         if (isset($this->paginationHandler)) {

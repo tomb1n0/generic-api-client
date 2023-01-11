@@ -2,7 +2,7 @@
 
 namespace Tomb1n0\GenericApiClient\Http\Traits;
 
-use GuzzleHttp\ClientInterface;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Tomb1n0\GenericApiClient\Contracts\MiddlewareContract;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;

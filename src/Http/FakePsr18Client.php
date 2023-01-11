@@ -12,12 +12,17 @@ use Psr\Http\Message\ResponseFactoryInterface;
 class FakePsr18Client implements ClientInterface
 {
     protected ResponseFactoryInterface $responseFactory;
-    protected array $stubbedResponses;
+    protected array $stubbedResponses = [];
 
-    public function __construct(array $stubbedResponses)
+    public function __construct()
     {
         $this->responseFactory = new HttpFactory();
-        $this->stubbedResponses = $stubbedResponses;
+        $this->stubbedResponses = [];
+    }
+
+    public function stubResponse(string $url, FakeResponse $fakeResponse)
+    {
+        $this->stubbedResponses[$url] = $fakeResponse;
     }
 
     public function sendRequest(RequestInterface $request): ResponseInterface

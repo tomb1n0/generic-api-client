@@ -110,17 +110,16 @@ $dummyJsonClient
 
 // Create another API that uses the dummyjson.com API but stub the responses out.
 // The way this works is that it replaces the given PSR-18 client with a fake one that returns stubbed responses.
-$dummyFakeJsonClient = (new Client())
+$dummyFakeJsonClient = Client::fake([
+    'https://dummyjson.com/products' => new FakeResponse(
+        [
+            'products' => [['id' => 1, 'name' => 'iPhone X'], ['id' => 2, 'name' => 'iPhone 11']],
+        ],
+        200,
+    ),
+])
     ->withBaseUrl('https://dummyjson.com')
-    ->withMiddleware([new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()])
-    ->fake([
-        'https://dummyjson.com/products' => new FakeResponse(
-            [
-                'products' => [['id' => 1, 'name' => 'iPhone X'], ['id' => 2, 'name' => 'iPhone 11']],
-            ],
-            200,
-        ),
-    ]);
+    ->withMiddleware([new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()]);
 
 $response = $dummyFakeJsonClient->json('GET', '/products');
 // $response->json() will have ['products' => [['id' => 1, 'name' => 'iPhone X'], ['id' => 2, 'name' => 'iPhone 11']]] in the body!

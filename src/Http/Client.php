@@ -2,6 +2,7 @@
 
 namespace Tomb1n0\GenericApiClient\Http;
 
+use RuntimeException;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Psr7\HttpFactory;
@@ -39,11 +40,25 @@ class Client implements ClientContract
         $this->requestFactory = new HttpFactory();
     }
 
-    public function fake(array $stubbedResponses = [])
+    public static function fake(array $stubbedResponses = [])
     {
-        $this->client = new FakePsr18Client($stubbedResponses);
+        $client = new Client();
+        $client->withPsr18Client(new FakePsr18Client());
 
-        return $this;
+        foreach ($stubbedResponses as $url => $fakeResponse) {
+            $client->stubResponse($url, $fakeResponse);
+        }
+
+        return $client;
+    }
+
+    public function stubResponse(string $url, FakeResponse $fakeResponse)
+    {
+        if (!$this->client instanceof FakePsr18Client) {
+            throw new RuntimeException('Please call ::fake() first');
+        }
+
+        $this->client->stubResponse($url, $fakeResponse);
     }
 
     /**

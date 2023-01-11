@@ -11,10 +11,11 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Client as GuzzleHttpClient;
 use Psr\Http\Message\RequestFactoryInterface;
+use Tomb1n0\GenericApiClient\Contracts\ClientContract;
 use Tomb1n0\GenericApiClient\Http\Traits\ClientFactoryMethods;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
-class Client
+class Client implements ClientContract
 {
     protected ClientInterface $client;
     protected MiddlewareDispatcher $middlewareDispatcher;
@@ -22,6 +23,9 @@ class Client
 
     protected ?string $baseUrl = null;
     protected ?PaginationHandlerContract $paginationHandler = null;
+
+    protected bool $preventStrayRequests = false;
+    protected array $stubbedResponses = [];
 
     use ClientFactoryMethods;
 
@@ -33,6 +37,13 @@ class Client
         $this->client = new GuzzleHttpClient();
         $this->middlewareDispatcher = new MiddlewareDispatcher();
         $this->requestFactory = new HttpFactory();
+    }
+
+    public function fake(array $stubbedResponses = [])
+    {
+        $this->client = new FakePsr18Client($stubbedResponses);
+
+        return $this;
     }
 
     /**
@@ -88,11 +99,25 @@ class Client
      */
     public function send(RequestInterface $request): Response
     {
-        $response = $this->middlewareDispatcher->dispatch(function (RequestInterface $request): ResponseInterface {
+        return new Response(
+            $this,
+            $request,
+            $this->sendRequestThroughMiddlewareStack($request),
+            $this->paginationHandler,
+        );
+    }
+
+    /**
+     * Send the given request through the middleware stack
+     *
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     */
+    protected function sendRequestThroughMiddlewareStack(RequestInterface $request): ResponseInterface
+    {
+        return $this->middlewareDispatcher->dispatch(function (RequestInterface $request): ResponseInterface {
             return $this->client->sendRequest($request);
         }, $request);
-
-        return new Response($this, $request, $response, $this->paginationHandler);
     }
 
     /**

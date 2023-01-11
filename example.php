@@ -5,6 +5,7 @@ use Psr\Http\Message\ResponseInterface;
 use Tomb1n0\GenericApiClient\Http\Client;
 use GuzzleHttp\Client as GuzzleHttpClient;
 use Tomb1n0\GenericApiClient\Http\Response;
+use Tomb1n0\GenericApiClient\Http\FakeResponse;
 use Tomb1n0\GenericApiClient\Contracts\MiddlewareContract;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
@@ -88,14 +89,15 @@ class AuthenticationMiddleware implements MiddlewareContract
     }
 }
 
-$client = (new Client())
+// Create an API that uses the dummyjson.com API
+$dummyJsonClient = (new Client())
     ->withPsr18Client(new GuzzleHttpClient())
     ->withBaseUrl('https://dummyjson.com')
     ->withPaginationHandler(new PaginationHandler())
     ->withMiddleware([new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()]);
 
 // Fetch Products, and paginate them
-$client
+$dummyJsonClient
     ->json('GET', '/products', [
         'limit' => 25,
     ])
@@ -105,3 +107,20 @@ $client
         // Do stuff with this page of products
         // var_dump($products);
     });
+
+// Create another API that uses the dummyjson.com API but stub the responses out.
+// The way this works is that it replaces the given PSR-18 client with a fake one that returns stubbed responses.
+$dummyFakeJsonClient = (new Client())
+    ->withBaseUrl('https://dummyjson.com')
+    ->withMiddleware([new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()])
+    ->fake([
+        'https://dummyjson.com/products' => new FakeResponse(
+            [
+                'products' => [['id' => 1, 'name' => 'iPhone X'], ['id' => 2, 'name' => 'iPhone 11']],
+            ],
+            200,
+        ),
+    ]);
+
+$response = $dummyFakeJsonClient->json('GET', '/products');
+// $response->json() will have ['products' => [['id' => 1, 'name' => 'iPhone X'], ['id' => 2, 'name' => 'iPhone 11']]] in the body!

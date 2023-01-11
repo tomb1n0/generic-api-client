@@ -46,7 +46,7 @@ class Client implements ClientContract
         $client->withPsr18Client(new FakePsr18Client());
 
         foreach ($stubbedResponses as $url => $fakeResponse) {
-            $client->stubResponse($url, $fakeResponse);
+            $client = $client->stubResponse($url, $fakeResponse);
         }
 
         return $client;
@@ -59,6 +59,8 @@ class Client implements ClientContract
         }
 
         $this->client->stubResponse($url, $fakeResponse);
+
+        return $this;
     }
 
     /**

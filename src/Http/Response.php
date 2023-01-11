@@ -2,8 +2,6 @@
 
 namespace Tomb1n0\GenericApiClient\Http;
 
-use Illuminate\Support\Arr;
-use Tomb1n0\GenericApiClient\Options;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
@@ -56,7 +54,7 @@ class Response
             return $this->decoded;
         }
 
-        return Arr::get($this->decoded, $key, $default);
+        return $this->decoded[$key] ?? $default;
     }
 
     public function status(): int

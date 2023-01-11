@@ -19,7 +19,7 @@ class Response
         Client $client,
         RequestInterface $request,
         ResponseInterface $response,
-        PaginationHandlerContract $paginationHandler,
+        ?PaginationHandlerContract $paginationHandler = null,
     ) {
         $this->client = $client;
         $this->request = $request;

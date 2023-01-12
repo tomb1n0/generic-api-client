@@ -12,9 +12,9 @@ interface MiddlewareContract
      *
      * Must return a Response via $next($request) or a brand new Response
      *
-     * @param RequestInterface $request
+     * @param RequestInterface $request Due to PSR-7 requests being immutable, we have to pass by reference here
      * @param Callable $next
      * @return ResponseInterface
      */
-    public function handle(RequestInterface $request, callable $next): ResponseInterface;
+    public function handle(RequestInterface &$request, callable $next): ResponseInterface;
 }

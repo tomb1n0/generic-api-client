@@ -10,6 +10,7 @@ use Psr\Http\Message\UriInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use PHPUnit\Framework\Assert as PHPUnit;
 use GuzzleHttp\Client as GuzzleHttpClient;
 use Psr\Http\Message\RequestFactoryInterface;
 use Tomb1n0\GenericApiClient\Contracts\ClientContract;
@@ -18,6 +19,8 @@ use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
 class Client implements ClientContract
 {
+    use ClientFactoryMethods;
+
     protected ClientInterface $client;
     protected MiddlewareDispatcher $middlewareDispatcher;
     protected RequestFactoryInterface $requestFactory;
@@ -27,8 +30,7 @@ class Client implements ClientContract
 
     protected bool $preventStrayRequests = false;
     protected array $stubbedResponses = [];
-
-    use ClientFactoryMethods;
+    protected array $recordedRequests = [];
 
     /**
      * Construct the defaults for a Client
@@ -61,6 +63,34 @@ class Client implements ClientContract
         $this->client->stubResponse($url, $fakeResponse);
 
         return $this;
+    }
+
+    public function assertSent(callable $assertionCallback)
+    {
+        PHPUnit::assertTrue(count($this->recorded($assertionCallback)) > 0, 'An expected request was not recorded.');
+    }
+
+    public function assertNotSent(callable $assertionCallback)
+    {
+        PHPUnit::assertFalse(count($this->recorded($assertionCallback)) > 0, 'An unexpected request was recorded.');
+    }
+
+    /**
+     * Return the recorded requests, optionally filtered by a callback
+     *
+     * @return array
+     */
+    public function recorded(callable $filterCallback = null)
+    {
+        if ($filterCallback) {
+            return array_filter($this->recordedRequests, function (RecordedRequest $recordedRequest) use (
+                $filterCallback,
+            ) {
+                return $filterCallback($recordedRequest->request);
+            });
+        }
+
+        return $this->recordedRequests;
     }
 
     /**
@@ -116,21 +146,27 @@ class Client implements ClientContract
      */
     public function send(RequestInterface $request): Response
     {
-        return new Response(
+        $requestResponsePair = $this->sendRequestThroughMiddlewareStack($request);
+
+        $response = new Response(
             $this,
-            $request,
-            $this->sendRequestThroughMiddlewareStack($request),
+            $requestResponsePair->request,
+            $requestResponsePair->response,
             $this->paginationHandler,
         );
+
+        $this->recordedRequests[] = new RecordedRequest($requestResponsePair->request, $response);
+
+        return $response;
     }
 
     /**
      * Send the given request through the middleware stack
      *
      * @param RequestInterface $request
-     * @return ResponseInterface
+     * @return RequestResponsePair
      */
-    protected function sendRequestThroughMiddlewareStack(RequestInterface $request): ResponseInterface
+    protected function sendRequestThroughMiddlewareStack(RequestInterface $request): RequestResponsePair
     {
         return $this->middlewareDispatcher->dispatch(function (RequestInterface $request): ResponseInterface {
             return $this->client->sendRequest($request);

@@ -37,17 +37,19 @@ class MiddlewareDispatcher
      * Dispatch a callable through the middleware chain
      *
      * @param callable $action The core callable to call at the end of the chain, it must accept a RequestInterface parameter
-     * @param RequestInterface $request The request to dispatch through the chain
-     * @return ResponseInterface
+     * @param RequestInterface $originalRequest The request to dispatch through the chain
+     * @return RequestResponsePair
      */
-    public function dispatch(callable $action, RequestInterface $request): ResponseInterface
+    public function dispatch(callable $action, RequestInterface $request): RequestResponsePair
     {
         foreach ($this->middleware as $middleware) {
-            $action = function (RequestInterface $request) use ($middleware, $action) {
+            $action = function (RequestInterface &$request) use ($middleware, $action): ResponseInterface {
                 return $middleware->handle($request, $action);
             };
         }
 
-        return $action($request);
+        $response = $action($request);
+
+        return new RequestResponsePair($request, $response);
     }
 }

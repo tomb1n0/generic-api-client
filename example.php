@@ -57,7 +57,7 @@ class PaginationHandler implements PaginationHandlerContract
 
 class ProfilingMiddleware implements MiddlewareContract
 {
-    public function handle(RequestInterface $request, callable $next): ResponseInterface
+    public function handle(RequestInterface &$request, callable $next): ResponseInterface
     {
         $start = microtime(true);
 
@@ -71,7 +71,7 @@ class ProfilingMiddleware implements MiddlewareContract
 
 class LoggerMiddleware implements MiddlewareContract
 {
-    public function handle(RequestInterface $request, callable $next): ResponseInterface
+    public function handle(RequestInterface &$request, callable $next): ResponseInterface
     {
         var_dump("Performing {$request->getMethod()} request to {$request->getUri()}");
 
@@ -81,7 +81,7 @@ class LoggerMiddleware implements MiddlewareContract
 
 class AuthenticationMiddleware implements MiddlewareContract
 {
-    public function handle(RequestInterface $request, callable $next): ResponseInterface
+    public function handle(RequestInterface &$request, callable $next): ResponseInterface
     {
         $request = $request->withHeader('Authorization', 'Bearer 123456789');
 
@@ -89,37 +89,36 @@ class AuthenticationMiddleware implements MiddlewareContract
     }
 }
 
-// Create an API that uses the dummyjson.com API
-$dummyJsonClient = (new Client())
-    ->withPsr18Client(new GuzzleHttpClient())
-    ->withBaseUrl('https://dummyjson.com')
-    ->withPaginationHandler(new PaginationHandler())
-    ->withMiddleware([new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()]);
+class BeforeMiddleware implements MiddlewareContract
+{
+    public function handle(RequestInterface &$request, callable $next): ResponseInterface
+    {
+        $request = $request->withHeader('X-Custom-Before-Header', 'Foo');
 
-// Fetch Products, and paginate them
-$dummyJsonClient
-    ->json('GET', '/products', [
-        'limit' => 25,
-    ])
-    ->forEachPage(function (Response $response) {
-        $products = $response->json('products', []);
+        return $next($request);
+    }
+}
+class AfterMiddleware implements MiddlewareContract
+{
+    public function handle(RequestInterface &$request, callable $next): ResponseInterface
+    {
+        $response = $next($request);
 
-        // Do stuff with this page of products
-        // var_dump($products);
-    });
+        $response = $response->withHeader('X-Custom-After-Header', 'Foo');
 
-// Create another API that uses the dummyjson.com API but stub the responses out.
-// The way this works is that it replaces the given PSR-18 client with a fake one that returns stubbed responses.
-$dummyFakeJsonClient = Client::fake([
-    'https://dummyjson.com/products' => new FakeResponse(
-        [
-            'products' => [['id' => 1, 'name' => 'iPhone X'], ['id' => 2, 'name' => 'iPhone 11']],
-        ],
-        200,
-    ),
+        return $response;
+    }
+}
+
+$dummyAPI = Client::fake([
+    'https://dummyjson.com/products' => new FakeResponse(),
 ])
     ->withBaseUrl('https://dummyjson.com')
-    ->withMiddleware([new AuthenticationMiddleware(), new LoggerMiddleware(), new ProfilingMiddleware()]);
+    ->withMiddleware([new AuthenticationMiddleware(), new BeforeMiddleware()]);
 
-$response = $dummyFakeJsonClient->json('GET', '/products');
-// $response->json() will have ['products' => [['id' => 1, 'name' => 'iPhone X'], ['id' => 2, 'name' => 'iPhone 11']]] in the body!
+$dummyAPI->json('GET', '/products');
+
+// Assert we correctly tacked on the Authorization Header
+$dummyAPI->assertSent(function (RequestInterface $request) {
+    return $request->getHeader('Authorization') === ['Bearer 123456789'];
+});

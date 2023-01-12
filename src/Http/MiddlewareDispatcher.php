@@ -40,16 +40,26 @@ class MiddlewareDispatcher
      * @param RequestInterface $originalRequest The request to dispatch through the chain
      * @return RequestResponsePair
      */
-    public function dispatch(callable $action, RequestInterface $request): RequestResponsePair
+    public function dispatch(callable $coreAction, RequestInterface $request): RequestResponsePair
     {
+        $finalRequest = $request;
+
+        // Wrap our Core Action in an anonymous that captures the final request before it is sent over the network
+        $action = function (RequestInterface $request) use ($coreAction, &$finalRequest) {
+            $finalRequest = $request;
+
+            return $coreAction($request);
+        };
+
+        // Wrap the current action in the next middleware in the chain
         foreach ($this->middleware as $middleware) {
-            $action = function (RequestInterface &$request) use ($middleware, $action): ResponseInterface {
+            $action = function (RequestInterface $request) use ($middleware, $action): ResponseInterface {
                 return $middleware->handle($request, $action);
             };
         }
 
-        $response = $action($request);
+        $finalResponse = $action($request);
 
-        return new RequestResponsePair($request, $response);
+        return new RequestResponsePair($finalRequest, $finalResponse);
     }
 }

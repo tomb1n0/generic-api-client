@@ -57,7 +57,7 @@ class PaginationHandler implements PaginationHandlerContract
 
 class ProfilingMiddleware implements MiddlewareContract
 {
-    public function handle(RequestInterface &$request, callable $next): ResponseInterface
+    public function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         $start = microtime(true);
 
@@ -71,7 +71,7 @@ class ProfilingMiddleware implements MiddlewareContract
 
 class LoggerMiddleware implements MiddlewareContract
 {
-    public function handle(RequestInterface &$request, callable $next): ResponseInterface
+    public function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         var_dump("Performing {$request->getMethod()} request to {$request->getUri()}");
 
@@ -81,9 +81,13 @@ class LoggerMiddleware implements MiddlewareContract
 
 class AuthenticationMiddleware implements MiddlewareContract
 {
-    public function handle(RequestInterface &$request, callable $next): ResponseInterface
+    public function __construct(protected string $accessToken)
     {
-        $request = $request->withHeader('Authorization', 'Bearer 123456789');
+    }
+
+    public function handle(RequestInterface $request, callable $next): ResponseInterface
+    {
+        $request = $request->withHeader('Authorization', 'Bearer ' . $this->accessToken);
 
         return $next($request);
     }
@@ -91,7 +95,7 @@ class AuthenticationMiddleware implements MiddlewareContract
 
 class BeforeMiddleware implements MiddlewareContract
 {
-    public function handle(RequestInterface &$request, callable $next): ResponseInterface
+    public function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         $request = $request->withHeader('X-Custom-Before-Header', 'Foo');
 
@@ -100,7 +104,7 @@ class BeforeMiddleware implements MiddlewareContract
 }
 class AfterMiddleware implements MiddlewareContract
 {
-    public function handle(RequestInterface &$request, callable $next): ResponseInterface
+    public function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         $response = $next($request);
 
@@ -114,11 +118,12 @@ $dummyAPI = Client::fake([
     'https://dummyjson.com/products' => new FakeResponse(),
 ])
     ->withBaseUrl('https://dummyjson.com')
-    ->withMiddleware([new AuthenticationMiddleware(), new BeforeMiddleware()]);
+    ->withMiddleware([new AfterMiddleware(), new AuthenticationMiddleware('my-fancy-token'), new BeforeMiddleware()]);
 
 $dummyAPI->json('GET', '/products');
 
 // Assert we correctly tacked on the Authorization Header
 $dummyAPI->assertSent(function (RequestInterface $request) {
-    return $request->getHeader('Authorization') === ['Bearer 123456789'];
+    return $request->getHeaderLine('Authorization') === 'Bearer my-fancy-token' &&
+        $request->getHeaderLine('X-Custom-Before-Header') === 'Foo';
 });

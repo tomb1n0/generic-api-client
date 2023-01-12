@@ -16,5 +16,5 @@ interface MiddlewareContract
      * @param Callable $next
      * @return ResponseInterface
      */
-    public function handle(RequestInterface &$request, callable $next): ResponseInterface;
+    public function handle(RequestInterface $request, callable $next): ResponseInterface;
 }

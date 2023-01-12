@@ -1,6 +1,9 @@
 {
     "name": "tomb1n0/generic-api-client",
     "description": "A package to help speed up development when consuming APIs",
+    "homepage": "https://github.com/tomb1n0/guzzle-mock-handler",
+    "license": "MIT",
+    "type": "library",
     "autoload": {
         "psr-4": {
             "Tomb1n0\\GenericApiClient\\": "src/"
@@ -18,5 +21,8 @@
         "psr/http-factory": "^1.0",
         "guzzlehttp/guzzle": "^7.5",
         "guzzlehttp/psr7": "^2.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
     }
 }

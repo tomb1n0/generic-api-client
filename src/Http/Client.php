@@ -21,15 +21,50 @@ class Client implements ClientContract
 {
     use ClientFactoryMethods;
 
+    /**
+     * The Underlying PSR-18 Client we will be using to make requests
+     *
+     * @var ClientInterface
+     */
     protected ClientInterface $client;
+
+    /**
+     * The middleware dispatcher we will be using to send the request through before sending it to our PSR-18 client.
+     *
+     * @var MiddlewareDispatcher
+     */
     protected MiddlewareDispatcher $middlewareDispatcher;
+
+    /**
+     * The PSR-17 Request Factory to use when creating PSR-7 requests
+     *
+     * @var RequestFactoryInterface
+     */
     protected RequestFactoryInterface $requestFactory;
 
+    /**
+     * The BaseURL for the API.
+     *
+     * @var string|null
+     */
     protected ?string $baseUrl = null;
+
+    /**
+     * The Pagination Handler for this API.
+     *
+     * Used when fetching next pages from responses.
+     *
+     * @var PaginationHandlerContract|null
+     */
     protected ?PaginationHandlerContract $paginationHandler = null;
 
-    protected bool $preventStrayRequests = false;
-    protected array $stubbedResponses = [];
+    /**
+     * The requests we have recorded so far.
+     *
+     * Only used when we have faked the PSR-18 client. e.g. Client::fake()->json('GET', 'https://dummyjson.com/products')
+     *
+     * @var array<int, RecordedRequest>
+     */
     protected array $recordedRequests = [];
 
     /**
@@ -42,7 +77,15 @@ class Client implements ClientContract
         $this->requestFactory = new HttpFactory();
     }
 
-    public static function fake(array $stubbedResponses = [])
+    /**
+     * Fake this Client.
+     *
+     * Under the hood this swaps out the PSR-18 client with a fake, essentially mocking out the network layer.
+     *
+     * @param array<string, FakeResponse> $stubbedResponses An array keyed by endpoint with a value of the response to return.
+     * @return Client
+     */
+    public static function fake(array $stubbedResponses = []): Client
     {
         $client = new Client();
         $client->withPsr18Client(new FakePsr18Client());
@@ -54,10 +97,17 @@ class Client implements ClientContract
         return $client;
     }
 
-    public function stubResponse(string $url, FakeResponse $fakeResponse)
+    /**
+     * Stub the given URL with the given fake response.
+     *
+     * @param string $url
+     * @param FakeResponse $fakeResponse
+     * @return static
+     */
+    public function stubResponse(string $url, FakeResponse $fakeResponse): static
     {
         if (!$this->client instanceof FakePsr18Client) {
-            throw new RuntimeException('Please call ::fake() first');
+            throw new RuntimeException('Please call ::fake() first!');
         }
 
         $this->client->stubResponse($url, $fakeResponse);
@@ -65,12 +115,24 @@ class Client implements ClientContract
         return $this;
     }
 
-    public function assertSent(callable $assertionCallback)
+    /**
+     * Defer to the given callback to assert if a given request was sent.
+     *
+     * @param callable $assertionCallback
+     * @return void
+     */
+    public function assertSent(callable $assertionCallback): void
     {
         PHPUnit::assertTrue(count($this->recorded($assertionCallback)) > 0, 'An expected request was not recorded.');
     }
 
-    public function assertNotSent(callable $assertionCallback)
+    /**
+     * Defer to the given callback to assert if a given request was not sent.
+     *
+     * @param callable $assertionCallback
+     * @return void
+     */
+    public function assertNotSent(callable $assertionCallback): void
     {
         PHPUnit::assertFalse(count($this->recorded($assertionCallback)) > 0, 'An unexpected request was recorded.');
     }
@@ -78,9 +140,9 @@ class Client implements ClientContract
     /**
      * Return the recorded requests, optionally filtered by a callback
      *
-     * @return array
+     * @return array<int, RecordedRequest>
      */
-    public function recorded(callable $filterCallback = null)
+    public function recorded(callable $filterCallback = null): array
     {
         if ($filterCallback) {
             return array_filter($this->recordedRequests, function (RecordedRequest $recordedRequest) use (
@@ -98,7 +160,7 @@ class Client implements ClientContract
      *
      * @param string $method
      * @param string $url
-     * @param array $params
+     * @param array<int|string, mixed> $params
      * @return Response
      */
     public function json(string $method, string $url, array $params = []): Response
@@ -120,7 +182,7 @@ class Client implements ClientContract
      *
      * @param string $method
      * @param string $url
-     * @param array $params
+     * @param array<int|string, mixed> $params
      * @return Response
      */
     public function form(string $method, string $url, array $params = []): Response
@@ -137,9 +199,9 @@ class Client implements ClientContract
     }
 
     /**
-     * Actually send the request, dispatching the request through our middleware stack.
+     * Actually send the request.
      *
-     * This is used by the json and form methods internally, however this is public so you can send custom PSR-7 requests as needed.
+     * This is useful because you might want to send a handcrafted PSR-7 request instead of relying on json/form methods
      *
      * @param RequestInterface $request
      * @return Response
@@ -180,8 +242,8 @@ class Client implements ClientContract
      *
      * @param string $method
      * @param string $url
-     * @param array $options
-     * @return string
+     * @param array<int|string, mixed> $options
+     * @return UriInterface
      */
     protected function buildUrl(string $method, string $url, array $options): UriInterface
     {

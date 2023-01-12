@@ -11,7 +11,18 @@ use Psr\Http\Message\ResponseFactoryInterface;
 
 class FakePsr18Client implements ClientInterface
 {
+    /**
+     * The response factory to use when creating PSR-7 Response
+     *
+     * @var ResponseFactoryInterface
+     */
     protected ResponseFactoryInterface $responseFactory;
+
+    /**
+     * The stubbed responses, keyed by endpoint
+     *
+     * @var array<string, FakeResponse>
+     */
     protected array $stubbedResponses = [];
 
     public function __construct()
@@ -20,7 +31,7 @@ class FakePsr18Client implements ClientInterface
         $this->stubbedResponses = [];
     }
 
-    public function stubResponse(string $url, FakeResponse $fakeResponse)
+    public function stubResponse(string $url, FakeResponse $fakeResponse): void
     {
         $this->stubbedResponses[$url] = $fakeResponse;
     }

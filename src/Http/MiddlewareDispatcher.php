@@ -4,6 +4,7 @@ namespace Tomb1n0\GenericApiClient\Http;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Tomb1n0\GenericApiClient\Contracts\MiddlewareContract;
 
 class MiddlewareDispatcher
 {
@@ -19,13 +20,19 @@ class MiddlewareDispatcher
     /**
      * Create a new Middleware dispatcher
      *
-     * @param array $middleware
+     * @param array<MiddlewareContract> $middleware
      */
     public function __construct(array $middleware = [])
     {
-        $this->middleware = is_array($middleware) ? array_reverse($middleware) : [];
+        $this->withMiddleware($middleware);
     }
 
+    /**
+     * Set the middleware on this dispatcher.
+     *
+     * @param array<int, MiddlewareContract> $middleware
+     * @return static
+     */
     public function withMiddleware(array $middleware = []): static
     {
         $this->middleware = array_reverse($middleware);
@@ -36,8 +43,8 @@ class MiddlewareDispatcher
     /**
      * Dispatch a callable through the middleware chain
      *
-     * @param callable $action The core callable to call at the end of the chain, it must accept a RequestInterface parameter
-     * @param RequestInterface $originalRequest The request to dispatch through the chain
+     * @param callable $coreAction The core callable to call at the end of the chain, it must accept a RequestInterface parameter
+     * @param RequestInterface $request The request to dispatch through the chain
      * @return RequestResponsePair
      */
     public function dispatch(callable $coreAction, RequestInterface $request): RequestResponsePair

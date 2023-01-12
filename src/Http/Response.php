@@ -8,12 +8,49 @@ use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
 class Response
 {
+    /**
+     * The Client instance used to create this Response.
+     *
+     * Useful for paginating as we can create a new request.
+     *
+     * @var Client
+     */
     protected Client $client;
+
+    /**
+     * The underlying PSR-7 Request
+     *
+     * @var RequestInterface
+     */
     protected RequestInterface $request;
+
+    /**
+     * The underlying PSR-7 Response
+     *
+     * @var ResponseInterface
+     */
     protected ResponseInterface $response;
+
+    /**
+     * The contents of the response
+     *
+     * @var string
+     */
     protected string $contents;
+
+    /**
+     * The pagination handler. Used when calling the pagination methods.
+     *
+     * @var PaginationHandlerContract|null
+     */
     protected ?PaginationHandlerContract $paginationHandler = null;
-    protected $decoded;
+
+    /**
+     * The decoded content
+     *
+     * @var array<mixed>|null
+     */
+    protected ?array $decoded = null;
 
     public function __construct(
         Client $client,
@@ -44,9 +81,9 @@ class Response
         return $this->contents;
     }
 
-    public function json(?string $key = null, $default = null): mixed
+    public function json(?string $key = null, mixed $default = null): mixed
     {
-        if (!$this->decoded) {
+        if (!isset($this->decoded)) {
             $this->decoded = json_decode($this->contents, true);
         }
 
@@ -82,12 +119,12 @@ class Response
         return $this->status() >= 300 && $this->status() < 400;
     }
 
-    public function unauthorized()
+    public function unauthorized(): bool
     {
         return $this->status() === 401;
     }
 
-    public function forbidden()
+    public function forbidden(): bool
     {
         return $this->status() === 403;
     }

@@ -4,18 +4,24 @@
     "homepage": "https://github.com/tomb1n0/guzzle-mock-handler",
     "license": "MIT",
     "type": "library",
-    "autoload": {
-        "psr-4": {
-            "Tomb1n0\\GenericApiClient\\": "src/"
-        }
-    },
     "authors": [
         {
             "name": "Tom Harper",
             "email": "tom.harper@rareloop.com"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "Tomb1n0\\GenericApiClient\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tomb1n0\\GenericApiClient\\Tests\\": "tests"
+        }
+    },
     "require": {
+        "php": "^8.1",
         "psr/http-client": "^1.0",
         "psr/http-message": "^1.0",
         "psr/http-factory": "^1.0",
@@ -23,6 +29,8 @@
         "guzzlehttp/psr7": "^2.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^7.0|^8.0|^9.0",
+        "mockery/mockery": "^1.5",
+        "phpstan/phpstan": "^1.9"
     }
 }

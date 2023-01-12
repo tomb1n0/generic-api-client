@@ -13,7 +13,7 @@ interface ClientContract
      *
      * @param string $method
      * @param string $url
-     * @param array $params
+     * @param array<int|string, mixed> $params
      * @return Response
      */
     public function json(string $method, string $url, array $params = []): Response;
@@ -23,7 +23,7 @@ interface ClientContract
      *
      * @param string $method
      * @param string $url
-     * @param array $params
+     * @param array<int|string, mixed> $params
      * @return Response
      */
     public function form(string $method, string $url, array $params = []): Response;

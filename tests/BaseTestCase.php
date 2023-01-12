@@ -16,6 +16,7 @@ class BaseTestCase extends TestCase
     /**
      * Mock the given class, passing it to the given closure
      *
+     * @template T of object
      * @param class-string<T> $classToMock
      * @param Closure $callback
      * @return T

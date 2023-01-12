@@ -2,17 +2,15 @@
 
 namespace Tomb1n0\GenericApiClient\Http;
 
-use RuntimeException;
-use GuzzleHttp\Psr7\Uri;
-use GuzzleHttp\Psr7\Utils;
-use GuzzleHttp\Psr7\HttpFactory;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use PHPUnit\Framework\Assert as PHPUnit;
-use GuzzleHttp\Client as GuzzleHttpClient;
+use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Tomb1n0\GenericApiClient\Contracts\ClientContract;
 use Tomb1n0\GenericApiClient\Http\Traits\ClientFactoryMethods;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
@@ -43,6 +41,27 @@ class Client implements ClientContract
     protected RequestFactoryInterface $requestFactory;
 
     /**
+     * The PSR-17 Response Factory to use when creating PSR-7 responses
+     *
+     * @var ResponseFactoryInterface
+     */
+    protected ResponseFactoryInterface $responseFactory;
+
+    /**
+     * The stream interface to use when creating PSR-7 Request & Response bodies
+     *
+     * @var StreamFactoryInterface
+     */
+    protected StreamFactoryInterface $streamFactory;
+
+    /**
+     * The URI factory to use when creating URIs
+     *
+     * @var UriFactoryInterface
+     */
+    protected UriFactoryInterface $uriFactory;
+
+    /**
      * The BaseURL for the API.
      *
      * @var string|null
@@ -68,13 +87,22 @@ class Client implements ClientContract
     protected array $recordedRequests = [];
 
     /**
-     * Construct the defaults for a Client
+     * Construct a new Client.
      */
-    public function __construct()
-    {
-        $this->client = new GuzzleHttpClient();
+    public function __construct(
+        ClientInterface $client,
+        RequestFactoryInterface $requestFactory,
+        ResponseFactoryInterface $responseFactory,
+        StreamFactoryInterface $streamFactory,
+        UriFactoryInterface $uriFactory,
+    ) {
+        $this->client = $client;
+        $this->requestFactory = $requestFactory;
+        $this->responseFactory = $responseFactory;
+        $this->streamFactory = $streamFactory;
+        $this->uriFactory = $uriFactory;
+
         $this->middlewareDispatcher = new MiddlewareDispatcher();
-        $this->requestFactory = new HttpFactory();
     }
 
     /**
@@ -82,35 +110,38 @@ class Client implements ClientContract
      *
      * Under the hood this swaps out the PSR-18 client with a fake, essentially mocking out the network layer.
      *
-     * @param array<string, FakeResponse> $stubbedResponses An array keyed by endpoint with a value of the response to return.
-     * @return Client
+     * @return static
      */
-    public static function fake(array $stubbedResponses = []): Client
+    public function fake(): static
     {
-        $client = new Client();
-        $client->withPsr18Client(new FakePsr18Client());
+        $this->client = new FakePsr18Client($this->responseFactory);
 
-        foreach ($stubbedResponses as $url => $fakeResponse) {
-            $client = $client->stubResponse($url, $fakeResponse);
-        }
-
-        return $client;
+        return $this;
     }
 
     /**
      * Stub the given URL with the given fake response.
      *
      * @param string $url
-     * @param FakeResponse $fakeResponse
+     * @param array<int|string,mixed>|string|null $body
+     * @param integer $status
+     * @param array<string, string> $headers
      * @return static
      */
-    public function stubResponse(string $url, FakeResponse $fakeResponse): static
-    {
+    public function stubResponse(
+        string $url,
+        array|string|null $body = null,
+        int $status = 200,
+        array $headers = [],
+    ): static {
         if (!$this->client instanceof FakePsr18Client) {
-            throw new RuntimeException('Please call ::fake() first!');
+            $this->client = new FakePsr18Client($this->responseFactory);
         }
 
-        $this->client->stubResponse($url, $fakeResponse);
+        $this->client->stubResponse(
+            $url,
+            new FakeResponse($this->responseFactory, $this->streamFactory, $body, $status, $headers),
+        );
 
         return $this;
     }
@@ -171,7 +202,7 @@ class Client implements ClientContract
             ->withHeader('Accept', 'application/json');
 
         if (strtolower($method) !== 'get') {
-            $request = $request->withBody(Utils::streamFor(json_encode($params)));
+            $request = $request->withBody($this->streamFactory->createStream(json_encode($params)));
         }
 
         return $this->send($request);
@@ -192,7 +223,7 @@ class Client implements ClientContract
             ->withHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         if (strtolower($method) !== 'get') {
-            $request = $request->withBody(Utils::streamFor(http_build_query($params)));
+            $request = $request->withBody($this->streamFactory->createStream(http_build_query($params)));
         }
 
         return $this->send($request);
@@ -267,6 +298,6 @@ class Client implements ClientContract
             $url = $url . '?' . http_build_query($options);
         }
 
-        return new Uri($url);
+        return $this->uriFactory->createUri($url);
     }
 }

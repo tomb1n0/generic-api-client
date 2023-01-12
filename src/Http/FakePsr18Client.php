@@ -25,9 +25,9 @@ class FakePsr18Client implements ClientInterface
      */
     protected array $stubbedResponses = [];
 
-    public function __construct()
+    public function __construct(ResponseFactoryInterface $responseFactory)
     {
-        $this->responseFactory = new HttpFactory();
+        $this->responseFactory = $responseFactory;
         $this->stubbedResponses = [];
     }
 
@@ -40,6 +40,7 @@ class FakePsr18Client implements ClientInterface
     {
         $uri = (string) $request->getUri();
 
+        // Naive approach for now
         if (isset($this->stubbedResponses[$uri])) {
             return $this->stubbedResponses[$uri]->toPsr7Response();
         }

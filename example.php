@@ -1,11 +1,11 @@
 <?php
 
+use GuzzleHttp\Psr7\HttpFactory;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Tomb1n0\GenericApiClient\Http\Client;
 use GuzzleHttp\Client as GuzzleHttpClient;
 use Tomb1n0\GenericApiClient\Http\Response;
-use Tomb1n0\GenericApiClient\Http\FakeResponse;
 use Tomb1n0\GenericApiClient\Contracts\MiddlewareContract;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
@@ -114,16 +114,30 @@ class AfterMiddleware implements MiddlewareContract
     }
 }
 
-$dummyAPI = Client::fake([
-    'https://dummyjson.com/products' => new FakeResponse(),
-])
+$dummyJsonApi = new Client(
+    new GuzzleHttpClient(),
+    new HttpFactory(),
+    new HttpFactory(),
+    new HttpFactory(),
+    new HttpFactory(),
+);
+
+$dummyJsonApi = $dummyJsonApi
     ->withBaseUrl('https://dummyjson.com')
-    ->withMiddleware([new AfterMiddleware(), new AuthenticationMiddleware('my-fancy-token'), new BeforeMiddleware()]);
+    ->fake()
+    ->stubResponse('https://dummyjson.com/products', [
+        'products' => [
+            [
+                'id' => 1,
+            ],
+            [
+                'id' => 2,
+            ],
+        ],
+    ]);
 
-$dummyAPI->json('GET', '/products');
+$response = $dummyJsonApi->json('GET', '/products');
 
-// Assert we correctly tacked on the Authorization Header
-$dummyAPI->assertSent(function (RequestInterface $request) {
-    return $request->getHeaderLine('Authorization') === 'Bearer my-fancy-token' &&
-        $request->getHeaderLine('X-Custom-Before-Header') === 'Foo';
-});
+if ($response->successful()) {
+    var_dump($response->json('products'));
+}

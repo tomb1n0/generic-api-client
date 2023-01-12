@@ -2,39 +2,11 @@
 
 namespace Tomb1n0\GenericApiClient\Http\Traits;
 
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
 use Tomb1n0\GenericApiClient\Contracts\MiddlewareContract;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
 trait ClientFactoryMethods
 {
-    /**
-     * Use a custom PSR-18 Client when sending requests.
-     *
-     * @param ClientInterface $client
-     * @return static
-     */
-    public function withPsr18Client(ClientInterface $client): static
-    {
-        $this->client = $client;
-
-        return $this;
-    }
-
-    /**
-     * Use a Custom PSR-17 request factory when creating requests.
-     *
-     * @param RequestFactoryInterface $requestFactory
-     * @return static
-     */
-    public function withRequestFactory(RequestFactoryInterface $requestFactory): static
-    {
-        $this->requestFactory = $requestFactory;
-
-        return $this;
-    }
-
     /**
      * Use a Base URL when sending requests.
      *

@@ -29,8 +29,8 @@
         "psr/http-client": "^1.0",
         "psr/http-message": "^1.0",
         "psr/http-factory": "^1.0",
-        "psr/http-client-implementation": "*",
-        "psr/http-factory-implementation": "*"
+        "psr/http-client-implementation": "^1.0",
+        "psr/http-factory-implementation": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.0|^8.0|^9.0",

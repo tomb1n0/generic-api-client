@@ -122,19 +122,7 @@ $dummyJsonApi = new Client(
     new HttpFactory(),
 );
 
-$dummyJsonApi = $dummyJsonApi
-    ->withBaseUrl('https://dummyjson.com')
-    ->fake()
-    ->stubResponse('https://dummyjson.com/products', [
-        'products' => [
-            [
-                'id' => 1,
-            ],
-            [
-                'id' => 2,
-            ],
-        ],
-    ]);
+$dummyJsonApi = $dummyJsonApi->withBaseUrl('https://dummyjson.com')->stubResponse('https://dummyjson.com/products', []);
 
 $response = $dummyJsonApi->json('GET', '/products');
 

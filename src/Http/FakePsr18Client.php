@@ -8,6 +8,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Tomb1n0\GenericApiClient\Exceptions\NoMatchingStubbedResponseException;
 
 class FakePsr18Client implements ClientInterface
 {
@@ -40,11 +41,11 @@ class FakePsr18Client implements ClientInterface
     {
         $uri = (string) $request->getUri();
 
-        // Naive approach for now
+        // Naive approach for now, in the future we might want to stub GET vs POST requests differently, support regexing etc
         if (isset($this->stubbedResponses[$uri])) {
             return $this->stubbedResponses[$uri]->toPsr7Response();
         }
 
-        throw new RuntimeException('No stubbed response for ' . $uri);
+        throw new NoMatchingStubbedResponseException('No stubbed response for ' . $uri);
     }
 }

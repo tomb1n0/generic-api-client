@@ -73,6 +73,9 @@ class Response
 
     public function getResponse(): ResponseInterface
     {
+        // Ensure the body is rewound so the consumer can read the contents of the body if they want to.
+        $this->response->getBody()->rewind();
+
         return $this->response;
     }
 

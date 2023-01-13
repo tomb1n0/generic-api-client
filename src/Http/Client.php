@@ -123,17 +123,13 @@ class Client implements ClientContract
      * Stub the given URL with the given fake response.
      *
      * @param string $url
-     * @param array<int|string,mixed>|string|null $body
+     * @param mixed $body
      * @param integer $status
      * @param array<string, string> $headers
      * @return static
      */
-    public function stubResponse(
-        string $url,
-        array|string|null $body = null,
-        int $status = 200,
-        array $headers = [],
-    ): static {
+    public function stubResponse(string $url, mixed $body = null, int $status = 200, array $headers = []): static
+    {
         if (!$this->client instanceof FakePsr18Client) {
             $this->client = new FakePsr18Client($this->responseFactory);
         }
@@ -176,11 +172,13 @@ class Client implements ClientContract
     public function recorded(callable $filterCallback = null): array
     {
         if ($filterCallback) {
-            return array_filter($this->recordedRequests, function (RecordedRequest $recordedRequest) use (
+            $filteredRequests = array_filter($this->recordedRequests, function (RecordedRequest $recordedRequest) use (
                 $filterCallback,
             ) {
                 return $filterCallback($recordedRequest->request);
             });
+
+            return array_values($filteredRequests);
         }
 
         return $this->recordedRequests;
@@ -196,12 +194,14 @@ class Client implements ClientContract
      */
     public function json(string $method, string $url, array $params = []): Response
     {
+        $method = strtoupper($method);
+
         $request = $this->requestFactory
             ->createRequest($method, $this->buildUrl($method, $url, $params))
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Accept', 'application/json');
 
-        if (strtolower($method) !== 'get') {
+        if ($method !== 'GET') {
             $request = $request->withBody($this->streamFactory->createStream(json_encode($params)));
         }
 
@@ -218,11 +218,13 @@ class Client implements ClientContract
      */
     public function form(string $method, string $url, array $params = []): Response
     {
+        $method = strtoupper($method);
+
         $request = $this->requestFactory
             ->createRequest($method, $this->buildUrl($method, $url, $params))
             ->withHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-        if (strtolower($method) !== 'get') {
+        if ($method !== 'GET') {
             $request = $request->withBody($this->streamFactory->createStream(http_build_query($params)));
         }
 
@@ -278,6 +280,8 @@ class Client implements ClientContract
      */
     protected function buildUrl(string $method, string $url, array $options): UriInterface
     {
+        $method = strtoupper($method);
+
         /**
          * Check if we were given an already valid URL.
          *
@@ -294,7 +298,7 @@ class Client implements ClientContract
         }
 
         // If we're a GET request, tack on the options as query parameters
-        if (strtolower($method) === 'get') {
+        if ($method === 'GET' && !empty($options)) {
             $url = $url . '?' . http_build_query($options);
         }
 

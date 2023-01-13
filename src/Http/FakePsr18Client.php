@@ -2,23 +2,13 @@
 
 namespace Tomb1n0\GenericApiClient\Http;
 
-use RuntimeException;
-use GuzzleHttp\Psr7\HttpFactory;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
 use Tomb1n0\GenericApiClient\Exceptions\NoMatchingStubbedResponseException;
 
 class FakePsr18Client implements ClientInterface
 {
-    /**
-     * The response factory to use when creating PSR-7 Response
-     *
-     * @var ResponseFactoryInterface
-     */
-    protected ResponseFactoryInterface $responseFactory;
-
     /**
      * The stubbed responses, keyed by endpoint
      *
@@ -26,9 +16,8 @@ class FakePsr18Client implements ClientInterface
      */
     protected array $stubbedResponses = [];
 
-    public function __construct(ResponseFactoryInterface $responseFactory)
+    public function __construct()
     {
-        $this->responseFactory = $responseFactory;
         $this->stubbedResponses = [];
     }
 

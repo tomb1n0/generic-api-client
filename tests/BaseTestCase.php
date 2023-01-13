@@ -52,6 +52,26 @@ class BaseTestCase extends TestCase
         return [['POST'], ['PUT'], ['PATCH'], ['DELETE']];
     }
 
+    protected function bodyTypesProvider()
+    {
+        $resourceBody = 'Resource Body!';
+        $resource = fopen('php://memory', 'r+');
+        fwrite($resource, $resourceBody);
+        rewind($resource);
+
+        return [
+            [$resource, $resourceBody],
+            ['body', 'body'],
+            [['id' => 1], json_encode(['id' => 1])],
+            [http_build_query(['id' => 1]), http_build_query(['id' => 1])],
+            [1, '1'],
+            [0, '0'],
+            [null, ''],
+            [true, '1'],
+            [false, ''],
+        ];
+    }
+
     protected function requestFactory(): RequestFactoryInterface
     {
         return new HttpFactory();

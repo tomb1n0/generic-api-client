@@ -67,6 +67,36 @@ class FakeTest extends BaseTestCase
         $this->assertSame('different-header', $fooPsr7Response->getHeaderLine('X-Custom-Different-Header'));
     }
 
+    /**
+     * @test
+     * @dataProvider bodyTypesProvider
+     */
+    public function can_stub_a_request_with_body_for_a_json_request(mixed $body, string $expected)
+    {
+        $testingClient = $this->createTestingClient();
+        $client = $testingClient->client->stubResponse('https://example.com', $body);
+
+        $exampleResponse = $client->json('GET', 'https://example.com');
+        $examplePsr7Response = $exampleResponse->getResponse();
+
+        $this->assertSame($expected, $examplePsr7Response->getBody()->getContents());
+    }
+
+    /**
+     * @test
+     * @dataProvider bodyTypesProvider
+     */
+    public function can_stub_a_request_with_body_for_a_form_request(mixed $body, string $expected)
+    {
+        $testingClient = $this->createTestingClient();
+        $client = $testingClient->client->stubResponse('https://example.com', $body);
+
+        $exampleResponse = $client->form('GET', 'https://example.com');
+        $examplePsr7Response = $exampleResponse->getResponse();
+
+        $this->assertSame($expected, $examplePsr7Response->getBody()->getContents());
+    }
+
     /** @test */
     public function can_use_the_built_in_assertion_functions_with_json()
     {

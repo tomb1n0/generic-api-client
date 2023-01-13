@@ -75,7 +75,7 @@ class FakeResponse
             $this->body = json_encode($body);
         }
 
-        if (is_string($this->body)) {
+        if (is_scalar($this->body)) {
             $this->bodyStream = $this->streamFactory->createStream($this->body);
         }
 

@@ -114,7 +114,7 @@ class Client implements ClientContract
      */
     public function fake(): static
     {
-        $this->client = new FakePsr18Client($this->responseFactory);
+        $this->client = new FakePsr18Client();
 
         return $this;
     }
@@ -131,7 +131,7 @@ class Client implements ClientContract
     public function stubResponse(string $url, mixed $body = null, int $status = 200, array $headers = []): static
     {
         if (!$this->client instanceof FakePsr18Client) {
-            $this->client = new FakePsr18Client($this->responseFactory);
+            $this->client = new FakePsr18Client();
         }
 
         $this->client->stubResponse(

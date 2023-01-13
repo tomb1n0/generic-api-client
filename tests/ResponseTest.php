@@ -33,9 +33,9 @@ class ResponseTest extends BaseTestCase
     {
         $psr7Request = $this->requestFactory()->createRequest('GET', 'https://example.com');
 
-        $request = $this->createTestResponse(request: $psr7Request);
+        $response = $this->createTestResponse(request: $psr7Request);
 
-        $this->assertSame($psr7Request, $request->getRequest());
+        $this->assertSame($psr7Request, $response->toPsr7Request());
     }
 
     /** @test */
@@ -43,9 +43,9 @@ class ResponseTest extends BaseTestCase
     {
         $psr7Response = $this->responseFactory()->createResponse();
 
-        $request = $this->createTestResponse(response: $psr7Response);
+        $response = $this->createTestResponse(response: $psr7Response);
 
-        $this->assertSame($psr7Response, $request->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /**

@@ -25,7 +25,7 @@ class SendTest extends BaseTestCase
 
         $response = $testingClient->client->send($psr7Request);
 
-        $this->assertSame($psr7Request, $response->getRequest());
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Request, $response->toPsr7Request());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 }

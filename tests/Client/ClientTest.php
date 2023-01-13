@@ -31,7 +31,7 @@ class ClientTest extends BaseTestCase
 
         $response = $testingClient->client->json('GET', 'https://example.com');
 
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /** @test */
@@ -49,7 +49,7 @@ class ClientTest extends BaseTestCase
 
         $response = $testingClient->client->form('GET', 'https://example.com');
 
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /** @test */
@@ -67,7 +67,7 @@ class ClientTest extends BaseTestCase
 
         $response = $testingClient->client->send($this->requestFactory()->createRequest('GET', 'https://example.com'));
 
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /** @test */
@@ -93,7 +93,7 @@ class ClientTest extends BaseTestCase
 
         $response = $testingClient->client->json('GET', 'https://example.com');
 
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /** @test */
@@ -119,7 +119,7 @@ class ClientTest extends BaseTestCase
 
         $response = $testingClient->client->form('GET', 'https://example.com');
 
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /** @test */
@@ -140,7 +140,7 @@ class ClientTest extends BaseTestCase
         $testingClient->client->stubResponse('https://example.com');
         $response = $testingClient->client->json('GET', 'https://example.com');
 
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /** @test */
@@ -161,7 +161,7 @@ class ClientTest extends BaseTestCase
         $testingClient->client->stubResponse('https://example.com');
         $response = $testingClient->client->form('GET', 'https://example.com');
 
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /** @test */
@@ -182,7 +182,7 @@ class ClientTest extends BaseTestCase
         $testingClient->client->stubResponse('https://example.com');
         $response = $testingClient->client->send($this->requestFactory()->createRequest('GET', 'https://example.com'));
 
-        $this->assertSame($psr7Response, $response->getResponse());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
     }
 
     /** @test */

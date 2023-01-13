@@ -66,12 +66,12 @@ class Response
         $this->contents = $this->response->getBody()->getContents();
     }
 
-    public function getRequest(): RequestInterface
+    public function toPsr7Request(): RequestInterface
     {
         return $this->request;
     }
 
-    public function getResponse(): ResponseInterface
+    public function toPsr7Response(): ResponseInterface
     {
         // Ensure the body is rewound so the consumer can read the contents of the body if they want to.
         $this->response->getBody()->rewind();

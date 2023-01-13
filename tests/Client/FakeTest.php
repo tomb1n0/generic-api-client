@@ -52,8 +52,8 @@ class FakeTest extends BaseTestCase
         $exampleResponse = $client->json('GET', 'https://example.com');
         $fooResponse = $client->json('GET', 'https://foo.com');
 
-        $examplePsr7Response = $exampleResponse->getResponse();
-        $fooPsr7Response = $fooResponse->getResponse();
+        $examplePsr7Response = $exampleResponse->toPsr7Response();
+        $fooPsr7Response = $fooResponse->toPsr7Response();
 
         $this->assertSame(200, $examplePsr7Response->getStatusCode());
         $this->assertSame(
@@ -77,7 +77,7 @@ class FakeTest extends BaseTestCase
         $client = $testingClient->client->stubResponse('https://example.com', $body);
 
         $exampleResponse = $client->json('GET', 'https://example.com');
-        $examplePsr7Response = $exampleResponse->getResponse();
+        $examplePsr7Response = $exampleResponse->toPsr7Response();
 
         $this->assertSame($expected, $examplePsr7Response->getBody()->getContents());
     }
@@ -92,7 +92,7 @@ class FakeTest extends BaseTestCase
         $client = $testingClient->client->stubResponse('https://example.com', $body);
 
         $exampleResponse = $client->form('GET', 'https://example.com');
-        $examplePsr7Response = $exampleResponse->getResponse();
+        $examplePsr7Response = $exampleResponse->toPsr7Response();
 
         $this->assertSame($expected, $examplePsr7Response->getBody()->getContents());
     }
@@ -131,8 +131,8 @@ class FakeTest extends BaseTestCase
         $exampleResponse = $client->form('GET', 'https://example.com');
         $fooResponse = $client->form('GET', 'https://foo.com');
 
-        $examplePsr7Response = $exampleResponse->getResponse();
-        $fooPsr7Response = $fooResponse->getResponse();
+        $examplePsr7Response = $exampleResponse->toPsr7Response();
+        $fooPsr7Response = $fooResponse->toPsr7Response();
 
         $this->assertSame(200, $examplePsr7Response->getStatusCode());
         $this->assertSame(
@@ -180,8 +180,8 @@ class FakeTest extends BaseTestCase
         $exampleResponse = $client->send($this->requestFactory()->createRequest('GET', 'https://example.com'));
         $fooResponse = $client->send($this->requestFactory()->createRequest('GET', 'https://foo.com'));
 
-        $examplePsr7Response = $exampleResponse->getResponse();
-        $fooPsr7Response = $fooResponse->getResponse();
+        $examplePsr7Response = $exampleResponse->toPsr7Response();
+        $fooPsr7Response = $fooResponse->toPsr7Response();
 
         $this->assertSame(200, $examplePsr7Response->getStatusCode());
         $this->assertSame(

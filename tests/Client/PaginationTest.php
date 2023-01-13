@@ -18,7 +18,7 @@ class PaginationHandler implements PaginationHandlerContract
      */
     public function hasNextPage(Response $response): bool
     {
-        return $response->getResponse()->hasHeader('next_page');
+        return $response->toPsr7Response()->hasHeader('next_page');
     }
 
     /**
@@ -29,7 +29,7 @@ class PaginationHandler implements PaginationHandlerContract
      */
     public function getNextPage(Response $response): RequestInterface
     {
-        $originalRequest = $response->getRequest();
+        $originalRequest = $response->toPsr7Request();
         $uri = $originalRequest->getUri();
 
         $originalQuery = $uri->getQuery();
@@ -38,7 +38,7 @@ class PaginationHandler implements PaginationHandlerContract
         // Parse the query string into an array
         parse_str($originalQuery, $originalQueryArray);
 
-        $nextPageNumber = $response->getResponse()->getHeaderLine('next_page');
+        $nextPageNumber = $response->toPsr7Response()->getHeaderLine('next_page');
         $newUri = $uri->withQuery(
             http_build_query(
                 array_merge($originalQueryArray, [

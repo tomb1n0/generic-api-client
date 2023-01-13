@@ -64,8 +64,8 @@ class MiddlewareTest extends BaseTestCase
 
         $response = $client->json('GET', 'https://example.com');
 
-        $psr7Request = $response->getRequest();
-        $psr7Response = $response->getResponse();
+        $psr7Request = $response->toPsr7Request();
+        $psr7Response = $response->toPsr7Response();
 
         $this->assertSame('Bearer access-token', $psr7Request->getHeaderLine('Authorization'));
         $this->assertSame('Foo', $psr7Request->getHeaderLine('X-Custom-Before-Header'));

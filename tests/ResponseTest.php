@@ -102,6 +102,73 @@ class ResponseTest extends BaseTestCase
     }
 
     /** @test */
+    public function can_fetch_a_nested_value_out_of_the_json_contents()
+    {
+        $json = [
+            'id' => 1,
+            'name' => 'Tom Harper',
+            'address' => [
+                'line_1' => 'Line 1',
+                'line_2' => 'Line 2',
+            ],
+            'roles' => [
+                [
+                    'name' => 'admin',
+                ],
+                [
+                    'name' => 'user',
+                ],
+            ],
+        ];
+
+        $psr7Response = $this->responseFactory()
+            ->createResponse()
+            ->withBody(Utils::streamFor(json_encode($json)));
+
+        $response = $this->createTestResponse(response: $psr7Response);
+
+        $this->assertSame($json['address']['line_1'], $response->json('address.line_1'));
+        $this->assertSame($json['address']['line_2'], $response->json('address.line_2'));
+        $this->assertSame($json['roles'][0]['name'], $response->json('roles.0.name'));
+        $this->assertSame($json['roles'][1]['name'], $response->json('roles.1.name'));
+    }
+
+    /** @test */
+    public function can_provide_a_default_when_fetching_json()
+    {
+        $json = [
+            'id' => 1,
+            'name' => 'Tom Harper',
+            'address' => [
+                'line_1' => 'Line 1',
+                'line_2' => 'Line 2',
+            ],
+            'roles' => [
+                [
+                    'name' => 'admin',
+                ],
+                [
+                    'name' => 'user',
+                ],
+            ],
+        ];
+
+        $psr7Response = $this->responseFactory()
+            ->createResponse()
+            ->withBody(Utils::streamFor(json_encode($json)));
+
+        $response = $this->createTestResponse(response: $psr7Response);
+
+        $this->assertSame($json['address']['line_1'], $response->json('address.line_1'));
+        $this->assertSame('default', $response->json('address.line_4', 'default'));
+        $this->assertSame('default-2', $response->json('doesnt_exist', 'default-2'));
+        $this->assertSame(1, $response->json('some.deeply.nested.thing', 1));
+        $this->assertSame($json['roles'][0]['name'], $response->json('roles.0.name'));
+        $this->assertSame($json['roles'][1]['name'], $response->json('roles.1.name'));
+        $this->assertSame('super-admin', $response->json('roles.2.name', 'super-admin'));
+    }
+
+    /** @test */
     public function returns_null_if_not_valid_json()
     {
         $json = 'Not JSON';

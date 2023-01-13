@@ -11,7 +11,7 @@
         }
     ],
     "scripts": {
-        "tests": "./vendor/bin/phpunit",
+        "test": "./vendor/bin/phpunit",
         "coverage": "phpdbg -qrr ./vendor/bin/phpunit "
     },
     "autoload": {

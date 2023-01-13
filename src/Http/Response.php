@@ -73,6 +73,9 @@ class Response
 
     public function getResponse(): ResponseInterface
     {
+        // Ensure the body is rewound so the consumer can read the contents of the body if they want to.
+        $this->response->getBody()->rewind();
+
         return $this->response;
     }
 
@@ -81,6 +84,7 @@ class Response
         return $this->contents;
     }
 
+    // TODO: add support for nested keys wth a dot syntax
     public function json(?string $key = null, mixed $default = null): mixed
     {
         if (!isset($this->decoded)) {

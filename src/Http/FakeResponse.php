@@ -2,8 +2,7 @@
 
 namespace Tomb1n0\GenericApiClient\Http;
 
-use GuzzleHttp\Psr7\Utils;
-use GuzzleHttp\Psr7\HttpFactory;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -13,9 +12,9 @@ class FakeResponse
     /**
      * The body of the response
      *
-     * @var array<int|string,mixed>|string|null
+     * @var mixed
      */
-    protected array|string|null $body = null;
+    protected mixed $body = null;
 
     /**
      * The Status of the Response
@@ -46,16 +45,23 @@ class FakeResponse
     protected StreamFactoryInterface $streamFactory;
 
     /**
+     * The Stream for our Body.
+     *
+     * @var StreamInterface
+     */
+    protected ?StreamInterface $bodyStream = null;
+
+    /**
      * Create a new FakeResponse
      *
-     * @param array<int|string,mixed>|string|null $body
+     * @param mixed $body
      * @param integer $status
      * @param array<string, string> $headers
      */
     public function __construct(
         ResponseFactoryInterface $responseFactory,
         StreamFactoryInterface $streamFactory,
-        array|string|null $body = null,
+        mixed $body = null,
         int $status = 200,
         array $headers = [],
     ) {
@@ -68,12 +74,23 @@ class FakeResponse
         if (is_array($this->body)) {
             $this->body = json_encode($body);
         }
+
+        if (is_scalar($this->body)) {
+            $this->bodyStream = $this->streamFactory->createStream($this->body);
+        }
+
+        if (is_resource($this->body)) {
+            $this->bodyStream = $this->streamFactory->createStreamFromResource($this->body);
+        }
     }
 
     public function toPsr7Response(): ResponseInterface
     {
         $response = $this->responseFactory->createResponse($this->status);
-        $response = $response->withBody(Utils::streamFor($this->body));
+
+        if ($this->bodyStream) {
+            $response = $response->withBody($this->bodyStream);
+        }
 
         foreach ($this->headers as $key => $value) {
             $response = $response->withHeader($key, $value);

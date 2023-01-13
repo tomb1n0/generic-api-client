@@ -84,6 +84,7 @@ class Response
         return $this->contents;
     }
 
+    // TODO: add support for nested keys wth a dot syntax
     public function json(?string $key = null, mixed $default = null): mixed
     {
         if (!isset($this->decoded)) {

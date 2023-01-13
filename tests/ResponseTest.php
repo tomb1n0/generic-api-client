@@ -286,6 +286,52 @@ class ResponseTest extends BaseTestCase
     /** @test */
     public function can_loop_over_the_pages_using_the_pagination_handler()
     {
-        $this->markTestIncomplete('TODO');
+        $client = $this->mock(Client::class);
+        $paginationHandler = $this->mock(PaginationHandlerContract::class);
+
+        $firstPageResponse = $this->createTestResponse(client: $client, paginationHandler: $paginationHandler);
+
+        $secondPagePsr7Request = $this->requestFactory()->createRequest('GET', 'https://example.com?page=2');
+        $secondPagePsr7Response = $this->responseFactory()->createResponse();
+        $secondPageResponse = $this->createTestResponse(
+            client: $client,
+            paginationHandler: $paginationHandler,
+            request: $secondPagePsr7Request,
+            response: $secondPagePsr7Response,
+        );
+
+        // First Page
+        $paginationHandler
+            ->shouldReceive('hasNextPage')
+            ->with($firstPageResponse)
+            ->andReturn(true);
+
+        $paginationHandler
+            ->shouldReceive('getNextPage')
+            ->once()
+            ->with($firstPageResponse)
+            ->andReturn($secondPagePsr7Request);
+
+        $client
+            ->shouldReceive('send')
+            ->once()
+            ->with($secondPagePsr7Request)
+            ->andReturn($secondPageResponse);
+
+        // Second Page
+        $paginationHandler
+            ->shouldReceive('hasNextPage')
+            ->with($secondPageResponse)
+            ->andReturn(false);
+
+        $responsesHandled = [];
+
+        $firstPageResponse->forEachPage(function (Response $response) use (&$responsesHandled) {
+            $responsesHandled[] = $response;
+        });
+
+        $this->assertCount(2, $responsesHandled);
+        $this->assertSame($firstPageResponse, $responsesHandled[0]);
+        $this->assertSame($secondPageResponse, $responsesHandled[1]);
     }
 }

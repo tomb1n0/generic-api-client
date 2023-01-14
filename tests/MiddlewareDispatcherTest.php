@@ -63,6 +63,25 @@ class MiddlewareDispatcherTest extends BaseTestCase
     }
 
     /** @test */
+    public function can_retrieve_the_middleware()
+    {
+        $middleware = [new BeforeMiddleware(), new AfterMiddleware()];
+        $dispatcher = new MiddlewareDispatcher($middleware);
+
+        $this->assertSame(array_reverse($middleware), $dispatcher->getMiddleware());
+    }
+
+    /** @test */
+    public function changing_the_middleware_returns_a_new_instance()
+    {
+        $middleware = [new BeforeMiddleware(), new AfterMiddleware()];
+        $dispatcher = new MiddlewareDispatcher();
+        $newDispatcher = $dispatcher->withMiddleware($middleware);
+
+        $this->assertNotsame($dispatcher, $newDispatcher);
+    }
+
+    /** @test */
     public function can_dispatch_a_core_action_through_the_middleware()
     {
         $beforeMiddleware = new BeforeMiddleware();

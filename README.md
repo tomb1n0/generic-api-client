@@ -176,7 +176,8 @@ Note that it is possible for a middleware to mutate the request before it is sen
 It is possible to stub responses for testing purposes:
 
 ```php
-$client = $existingClient->stubResponse(
+// It is important to call fake first, as this returns a new client with a Fake PSR-18 client underneath.
+$client = $existingClient->fake()->stubResponse(
     'https://dummyjson.com/products',
     [
         'products' => [['id' => 1], ['id' => 2]],
@@ -199,7 +200,7 @@ Please note that once responses have been stubbed, un-stubbed requests will thro
 Maybe you want to assert the correct payload is sent to an API to create a user:
 
 ```php
-$client = $existingClient->stubResponse('https://dummyjson.com/users', null, 200);
+$client = $existingClient->fake()->stubResponse('https://dummyjson.com/users', null, 200);
 
 // This would likely be in some Service object method your test is calling.
 $response = $client->json('POST', 'https://dummyjson.com/users', ['name' => 'Tom']);

@@ -58,13 +58,15 @@ class PaginationTest extends BaseTestCase
     {
         $testingClient = $this->createTestingClient();
 
-        $testingClient->client->stubResponse('https://example.com?page=1', ['page' => 1], 200, [
-            'page' => 1,
-            'next_page' => 2,
-        ]);
-        $testingClient->client->stubResponse('https://example.com?page=2', ['page' => 2], 200, ['page' => 2]);
+        $client = $testingClient->client
+            ->fake()
+            ->stubResponse('https://example.com?page=1', ['page' => 1], 200, [
+                'page' => 1,
+                'next_page' => 2,
+            ])
+            ->stubResponse('https://example.com?page=2', ['page' => 2], 200, ['page' => 2]);
 
-        $response = $testingClient->client->json('GET', 'https://example.com', ['page' => 1]);
+        $response = $client->json('GET', 'https://example.com', ['page' => 1]);
 
         $this->assertSame(['page' => 1], $response->json());
 
@@ -79,13 +81,15 @@ class PaginationTest extends BaseTestCase
             return $client->withPaginationHandler(new PaginationHandler());
         });
 
-        $testingClient->client->stubResponse('https://example.com?page=1', ['page' => 1], 200, [
-            'page' => 1,
-            'next_page' => 2,
-        ]);
-        $testingClient->client->stubResponse('https://example.com?page=2', ['page' => 2], 200, ['page' => 2]);
+        $client = $testingClient->client
+            ->fake()
+            ->stubResponse('https://example.com?page=1', ['page' => 1], 200, [
+                'page' => 1,
+                'next_page' => 2,
+            ])
+            ->stubResponse('https://example.com?page=2', ['page' => 2], 200, ['page' => 2]);
 
-        $response = $testingClient->client->json('GET', 'https://example.com', ['page' => 1]);
+        $response = $client->json('GET', 'https://example.com', ['page' => 1]);
 
         $this->assertTrue($response->hasNextPage());
         $this->assertSame(['page' => 1], $response->json());
@@ -102,14 +106,16 @@ class PaginationTest extends BaseTestCase
             return $client->withPaginationHandler(new PaginationHandler());
         });
 
-        $testingClient->client->stubResponse('https://example.com?page=1', ['page' => 1], 200, ['next_page' => 2]);
-        $testingClient->client->stubResponse('https://example.com?page=2', ['page' => 2], 200, ['next_page' => 3]);
-        $testingClient->client->stubResponse('https://example.com?page=3', ['page' => 3], 200, ['next_page' => 4]);
-        $testingClient->client->stubResponse('https://example.com?page=4', ['page' => 4], 200, ['next_page' => 5]);
-        $testingClient->client->stubResponse('https://example.com?page=5', ['page' => 5]);
+        $client = $testingClient->client
+            ->fake()
+            ->stubResponse('https://example.com?page=1', ['page' => 1], 200, ['next_page' => 2])
+            ->stubResponse('https://example.com?page=2', ['page' => 2], 200, ['next_page' => 3])
+            ->stubResponse('https://example.com?page=3', ['page' => 3], 200, ['next_page' => 4])
+            ->stubResponse('https://example.com?page=4', ['page' => 4], 200, ['next_page' => 5])
+            ->stubResponse('https://example.com?page=5', ['page' => 5]);
 
         $page = 1;
-        $testingClient->client
+        $client
             ->json('GET', 'https://example.com', ['page' => 1])
             ->forEachPage(function (Response $response) use (&$page) {
                 $this->assertSame($page, $response->json('page'));

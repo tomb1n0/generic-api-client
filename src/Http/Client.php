@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Tomb1n0\GenericApiClient\Contracts\ClientContract;
@@ -191,6 +192,8 @@ class Client implements ClientContract
      * @param string $url
      * @param array<int|string, mixed> $params
      * @return Response
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
      */
     public function json(string $method, string $url, array $params = []): Response
     {
@@ -215,6 +218,8 @@ class Client implements ClientContract
      * @param string $url
      * @param array<int|string, mixed> $params
      * @return Response
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
      */
     public function form(string $method, string $url, array $params = []): Response
     {
@@ -238,6 +243,8 @@ class Client implements ClientContract
      *
      * @param RequestInterface $request
      * @return Response
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
      */
     public function send(RequestInterface $request): Response
     {
@@ -260,6 +267,8 @@ class Client implements ClientContract
      *
      * @param RequestInterface $request
      * @return RequestResponsePair
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
      */
     protected function sendRequestThroughMiddlewareStack(RequestInterface $request): RequestResponsePair
     {

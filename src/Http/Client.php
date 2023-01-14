@@ -9,11 +9,11 @@ use Psr\Http\Message\ResponseInterface;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Tomb1n0\GenericApiClient\Contracts\ClientContract;
 use Tomb1n0\GenericApiClient\Http\Traits\ClientFactoryMethods;
+use Tomb1n0\GenericApiClient\Exceptions\ClientNotFakedException;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
 class Client implements ClientContract
@@ -107,21 +107,24 @@ class Client implements ClientContract
     }
 
     /**
-     * Fake this Client.
+     * Return a new instance of this Client with a Faked PSR-18 client under the hood.
      *
-     * Under the hood this swaps out the PSR-18 client with a fake, essentially mocking out the network layer.
+     * Note that this returns a brand new instance with the client swapped out.
      *
      * @return static
      */
     public function fake(): static
     {
-        $this->client = new FakePsr18Client();
+        $copy = clone $this;
+        $copy->client = new FakePsr18Client();
 
-        return $this;
+        return $copy;
     }
 
     /**
      * Stub the given URL with the given fake response.
+     *
+     * Please call ->fake() first and call this on the returned client.
      *
      * @param string $url
      * @param mixed $body
@@ -132,7 +135,7 @@ class Client implements ClientContract
     public function stubResponse(string $url, mixed $body = null, int $status = 200, array $headers = []): static
     {
         if (!$this->client instanceof FakePsr18Client) {
-            $this->client = new FakePsr18Client();
+            throw new ClientNotFakedException('Please call ->fake() first.');
         }
 
         $this->client->stubResponse(

@@ -3,8 +3,6 @@
 namespace Tomb1n0\GenericApiClient\Tests\Client;
 
 use Mockery;
-use GuzzleHttp\Psr7\Uri;
-use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -13,9 +11,41 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Tomb1n0\GenericApiClient\Tests\BaseTestCase;
+use Tomb1n0\GenericApiClient\Contracts\MiddlewareContract;
+use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
 class ClientTest extends BaseTestCase
 {
+    /** @test */
+    public function can_create_with_a_base_url()
+    {
+        $baseUrl = 'https://example.com';
+
+        $client = $this->createTestingClient()->client->withBaseUrl($baseUrl);
+
+        $this->assertSame($baseUrl, $client->getBaseUrl());
+    }
+
+    /** @test */
+    public function can_create_with_a_pagination_handler()
+    {
+        $handler = $this->mock(PaginationHandlerContract::class);
+
+        $client = $this->createTestingClient()->client->withPaginationHandler($handler);
+
+        $this->assertSame($handler, $client->getPaginationHandler());
+    }
+
+    /** @test */
+    public function can_create_with_middleware()
+    {
+        $middleware = [$this->mock(MiddlewareContract::class), $this->mock(MiddlewareContract::class)];
+
+        $client = $this->createTestingClient()->client->withMiddleware($middleware);
+
+        $this->assertSame(array_reverse($middleware), $client->getMiddleware());
+    }
+
     /** @test */
     public function it_will_use_the_provided_psr18_client_to_make_json_requests()
     {
@@ -137,8 +167,8 @@ class ClientTest extends BaseTestCase
 
         $testingClient = $this->createTestingClient(psr17ResponseFactory: $responseFactory);
 
-        $testingClient->client->stubResponse('https://example.com');
-        $response = $testingClient->client->json('GET', 'https://example.com');
+        $client = $testingClient->client->fake()->stubResponse('https://example.com');
+        $response = $client->json('GET', 'https://example.com');
 
         $this->assertSame($psr7Response, $response->toPsr7Response());
     }
@@ -158,8 +188,8 @@ class ClientTest extends BaseTestCase
 
         $testingClient = $this->createTestingClient(psr17ResponseFactory: $responseFactory);
 
-        $testingClient->client->stubResponse('https://example.com');
-        $response = $testingClient->client->form('GET', 'https://example.com');
+        $fakeClient = $testingClient->client->fake()->stubResponse('https://example.com');
+        $response = $fakeClient->form('GET', 'https://example.com');
 
         $this->assertSame($psr7Response, $response->toPsr7Response());
     }
@@ -179,8 +209,8 @@ class ClientTest extends BaseTestCase
 
         $testingClient = $this->createTestingClient(psr17ResponseFactory: $responseFactory);
 
-        $testingClient->client->stubResponse('https://example.com');
-        $response = $testingClient->client->send($this->requestFactory()->createRequest('GET', 'https://example.com'));
+        $fakeClient = $testingClient->client->fake()->stubResponse('https://example.com');
+        $response = $fakeClient->send($this->requestFactory()->createRequest('GET', 'https://example.com'));
 
         $this->assertSame($psr7Response, $response->toPsr7Response());
     }
@@ -201,9 +231,9 @@ class ClientTest extends BaseTestCase
 
         $testingClient = $this->createTestingClient(psr7StreamFactory: $streamFactory);
 
-        $testingClient->client->stubResponse('https://example.com', $body);
+        $fakeClient = $testingClient->client->fake()->stubResponse('https://example.com', $body);
 
-        $response = $testingClient->client->json('GET', 'https://example.com');
+        $response = $fakeClient->json('GET', 'https://example.com');
 
         $this->assertSame($body, $response->json());
     }
@@ -222,9 +252,9 @@ class ClientTest extends BaseTestCase
                 ->andReturn($stream);
         });
         $testingClient = $this->createTestingClient(psr7StreamFactory: $streamFactory);
-        $testingClient->client->stubResponse('https://example.com', $body);
+        $fakeClient = $testingClient->client->fake()->stubResponse('https://example.com', $body);
 
-        $response = $testingClient->client->form('GET', 'https://example.com');
+        $response = $fakeClient->form('GET', 'https://example.com');
         $this->assertSame($body, $response->getContents());
     }
 

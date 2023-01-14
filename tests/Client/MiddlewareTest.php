@@ -58,7 +58,7 @@ class MiddlewareTest extends BaseTestCase
             },
         )->client;
 
-        $client->stubResponse('https://example.com', ['id' => 1], 200, [
+        $client = $client->fake()->stubResponse('https://example.com', ['id' => 1], 200, [
             'X-Original-Response-Header' => 'original-response-header',
         ]);
 

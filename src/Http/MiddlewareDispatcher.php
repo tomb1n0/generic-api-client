@@ -24,7 +24,7 @@ class MiddlewareDispatcher
      */
     public function __construct(array $middleware = [])
     {
-        $this->withMiddleware($middleware);
+        $this->middleware = array_reverse($middleware);
     }
 
     /**
@@ -35,9 +35,20 @@ class MiddlewareDispatcher
      */
     public function withMiddleware(array $middleware = []): static
     {
-        $this->middleware = array_reverse($middleware);
+        $copy = clone $this;
+        $copy->middleware = array_reverse($middleware);
 
-        return $this;
+        return $copy;
+    }
+
+    /**
+     * Return the configured middleware
+     *
+     * @return array<MiddlewareContract>
+     */
+    public function getMiddleware(): array
+    {
+        return $this->middleware;
     }
 
     /**

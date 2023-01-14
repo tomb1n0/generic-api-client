@@ -6,6 +6,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Tomb1n0\GenericApiClient\Tests\BaseTestCase;
 use Tomb1n0\GenericApiClient\Http\RecordedRequest;
+use Tomb1n0\GenericApiClient\Exceptions\ClientNotFakedException;
 use Tomb1n0\GenericApiClient\Exceptions\NoMatchingStubbedResponseException;
 
 class FakeTest extends BaseTestCase
@@ -22,6 +23,24 @@ class FakeTest extends BaseTestCase
 
         $this->expectException(NoMatchingStubbedResponseException::class);
         $client->json('GET', 'https://example.com');
+    }
+
+    /** @test */
+    public function faking_the_client_returns_a_different_instance()
+    {
+        $client = $this->createTestingClient()->client;
+
+        $this->assertNotSame($client, $client->fake());
+    }
+
+    /** @test */
+    public function trying_to_stub_a_response_without_calling_fake_throws_an_exception()
+    {
+        $client = $this->createTestingClient()->client;
+
+        $this->expectException(ClientNotFakedException::class);
+
+        $client->stubResponse('https://example.com');
     }
 
     /** @test */
@@ -42,6 +61,7 @@ class FakeTest extends BaseTestCase
     {
         $testingClient = $this->createTestingClient();
         $client = $testingClient->client
+            ->fake()
             ->stubResponse('https://example.com', ['id' => 1, 'name' => 'response'], 200, [
                 'X-Custom-Response-Header' => 'custom-header',
             ])
@@ -74,7 +94,7 @@ class FakeTest extends BaseTestCase
     public function can_stub_a_request_with_body_for_a_json_request(mixed $body, string $expected)
     {
         $testingClient = $this->createTestingClient();
-        $client = $testingClient->client->stubResponse('https://example.com', $body);
+        $client = $testingClient->client->fake()->stubResponse('https://example.com', $body);
 
         $exampleResponse = $client->json('GET', 'https://example.com');
         $examplePsr7Response = $exampleResponse->toPsr7Response();
@@ -89,7 +109,7 @@ class FakeTest extends BaseTestCase
     public function can_stub_a_request_with_body_for_a_form_request(mixed $body, string $expected)
     {
         $testingClient = $this->createTestingClient();
-        $client = $testingClient->client->stubResponse('https://example.com', $body);
+        $client = $testingClient->client->fake()->stubResponse('https://example.com', $body);
 
         $exampleResponse = $client->form('GET', 'https://example.com');
         $examplePsr7Response = $exampleResponse->toPsr7Response();
@@ -101,7 +121,10 @@ class FakeTest extends BaseTestCase
     public function can_use_the_built_in_assertion_functions_with_json()
     {
         $testingClient = $this->createTestingClient();
-        $client = $testingClient->client->stubResponse('https://example.com')->stubResponse('https://foo.com');
+        $client = $testingClient->client
+            ->fake()
+            ->stubResponse('https://example.com')
+            ->stubResponse('https://foo.com');
 
         $client->json('GET', 'https://example.com');
 
@@ -121,6 +144,7 @@ class FakeTest extends BaseTestCase
     {
         $testingClient = $this->createTestingClient();
         $client = $testingClient->client
+            ->fake()
             ->stubResponse('https://example.com', ['id' => 1, 'name' => 'response'], 200, [
                 'X-Custom-Response-Header' => 'custom-header',
             ])
@@ -150,7 +174,10 @@ class FakeTest extends BaseTestCase
     public function can_use_built_in_assertion_functions_with_form()
     {
         $testingClient = $this->createTestingClient();
-        $client = $testingClient->client->stubResponse('https://example.com')->stubResponse('https://foo.com');
+        $client = $testingClient->client
+            ->fake()
+            ->stubResponse('https://example.com')
+            ->stubResponse('https://foo.com');
 
         $client->form('GET', 'https://example.com');
 
@@ -170,6 +197,7 @@ class FakeTest extends BaseTestCase
     {
         $testingClient = $this->createTestingClient();
         $client = $testingClient->client
+            ->fake()
             ->stubResponse('https://example.com', ['id' => 1, 'name' => 'response'], 200, [
                 'X-Custom-Response-Header' => 'custom-header',
             ])
@@ -199,7 +227,10 @@ class FakeTest extends BaseTestCase
     public function can_use_built_in_assertion_functions_with_custom_request()
     {
         $testingClient = $this->createTestingClient();
-        $client = $testingClient->client->stubResponse('https://example.com')->stubResponse('https://foo.com');
+        $client = $testingClient->client
+            ->fake()
+            ->stubResponse('https://example.com')
+            ->stubResponse('https://foo.com');
 
         $client->send($this->requestFactory()->createRequest('GET', 'https://example.com'));
 
@@ -219,6 +250,7 @@ class FakeTest extends BaseTestCase
     {
         $testingClient = $this->createTestingClient();
         $client = $testingClient->client
+            ->fake()
             ->stubResponse('https://example.com', ['id' => 1, 'name' => 'response'], 200, [
                 'X-Custom-Response-Header' => 'custom-header',
             ])
@@ -242,6 +274,7 @@ class FakeTest extends BaseTestCase
     {
         $testingClient = $this->createTestingClient();
         $client = $testingClient->client
+            ->fake()
             ->stubResponse('https://example.com', ['id' => 1, 'name' => 'response'], 200, [
                 'X-Custom-Response-Header' => 'custom-header',
             ])

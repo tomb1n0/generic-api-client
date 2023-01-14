@@ -20,7 +20,7 @@ My goal with this package is to provide a wrapper around these PSR interfaces th
 
 ## Installation
 
-Please note that this package does not require a HTTP client out of the box - but rather it depends on the virtual packages `psr/http-client-implementation` and `psr/http-factory-implementation. This allows the package to be client-agnostic.
+Please note that this package does not require a HTTP client out of the box - but rather it depends on the virtual packages `psr/http-client-implementation` and `psr/http-factory-implementation`. This allows the package to be client-agnostic.
 
 If you're unsure on this, i would recommend requiring `guzzlehttp/guzzle` alongside this package as it provides implementations for the above virtual packages.
 

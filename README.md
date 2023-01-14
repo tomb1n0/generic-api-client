@@ -218,3 +218,12 @@ $client->assertSent(function (RequestInterface $request) {
 ```bash
 composer test
 ```
+
+## Credits
+
+-   [Tom Harper](https://github.com/tomb1n0)
+-   [All Contributors](../../contributors)
+
+## License
+
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.

@@ -36,8 +36,7 @@
         "phpunit/phpunit": "^7.0|^8.0|^9.0",
         "mockery/mockery": "^1.5",
         "phpstan/phpstan": "^1.9",
-        "guzzlehttp/guzzle": "^7.5",
-        "guzzlehttp/psr7": "^2.4"
+        "guzzlehttp/guzzle": "^7.5"
     },
     "suggest": {
         "guzzlehttp/guzzle": "A psr/http-client implementation that can be used with this package for a PSR-18 client",

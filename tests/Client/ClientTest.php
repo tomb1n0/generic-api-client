@@ -21,9 +21,12 @@ class ClientTest extends BaseTestCase
     {
         $baseUrl = 'https://example.com';
 
-        $client = $this->createTestingClient()->client->withBaseUrl($baseUrl);
+        $client = $this->createTestingClient()->client;
+        $newClient = $client->withBaseUrl($baseUrl);
 
-        $this->assertSame($baseUrl, $client->getBaseUrl());
+        $this->assertNotSame($client, $newClient);
+        $this->assertSame(null, $client->getBaseUrl());
+        $this->assertSame($baseUrl, $newClient->getBaseUrl());
     }
 
     /** @test */
@@ -31,9 +34,12 @@ class ClientTest extends BaseTestCase
     {
         $handler = $this->mock(PaginationHandlerContract::class);
 
-        $client = $this->createTestingClient()->client->withPaginationHandler($handler);
+        $client = $this->createTestingClient()->client;
+        $newClient = $client->withPaginationHandler($handler);
 
-        $this->assertSame($handler, $client->getPaginationHandler());
+        $this->assertNotSame($client, $newClient);
+        $this->assertSame(null, $client->getPaginationHandler());
+        $this->assertSame($handler, $newClient->getPaginationHandler());
     }
 
     /** @test */
@@ -41,9 +47,29 @@ class ClientTest extends BaseTestCase
     {
         $middleware = [$this->mock(MiddlewareContract::class), $this->mock(MiddlewareContract::class)];
 
-        $client = $this->createTestingClient()->client->withMiddleware($middleware);
+        $client = $this->createTestingClient()->client;
+        $newClient = $client->withMiddleware($middleware);
 
+        $this->assertNotSame($client, $newClient);
+        $this->assertSame([], $client->getMiddleware());
+        $this->assertSame(array_reverse($middleware), $newClient->getMiddleware());
+    }
+
+    /** @test */
+    public function creating_with_base_url_pagination_handler_etc_doesnt_lose_values()
+    {
+        $baseUrl = 'https://example.com';
+        $middleware = [$this->mock(MiddlewareContract::class), $this->mock(MiddlewareContract::class)];
+        $handler = $this->mock(PaginationHandlerContract::class);
+
+        $client = $this->createTestingClient()
+            ->client->withPaginationHandler($handler)
+            ->withMiddleware($middleware)
+            ->withBaseUrl($baseUrl);
+
+        $this->assertSame($handler, $client->getPaginationHandler());
         $this->assertSame(array_reverse($middleware), $client->getMiddleware());
+        $this->assertSame($baseUrl, $client->getBaseUrl());
     }
 
     /** @test */

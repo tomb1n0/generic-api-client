@@ -21,12 +21,9 @@ class ClientTest extends BaseTestCase
     {
         $baseUrl = 'https://example.com';
 
-        $client = $this->createTestingClient()->client;
-        $newClient = $client->withBaseUrl($baseUrl);
+        $client = $this->createTestingClient()->client->withBaseUrl($baseUrl);
 
-        $this->assertNotSame($client, $newClient);
-        $this->assertSame(null, $client->getBaseUrl());
-        $this->assertSame($baseUrl, $newClient->getBaseUrl());
+        $this->assertSame($baseUrl, $client->getBaseUrl());
     }
 
     /** @test */
@@ -34,12 +31,9 @@ class ClientTest extends BaseTestCase
     {
         $handler = $this->mock(PaginationHandlerContract::class);
 
-        $client = $this->createTestingClient()->client;
-        $newClient = $client->withPaginationHandler($handler);
+        $client = $this->createTestingClient()->client->withPaginationHandler($handler);
 
-        $this->assertNotSame($client, $newClient);
-        $this->assertSame(null, $client->getPaginationHandler());
-        $this->assertSame($handler, $newClient->getPaginationHandler());
+        $this->assertSame($handler, $client->getPaginationHandler());
     }
 
     /** @test */
@@ -47,12 +41,9 @@ class ClientTest extends BaseTestCase
     {
         $middleware = [$this->mock(MiddlewareContract::class), $this->mock(MiddlewareContract::class)];
 
-        $client = $this->createTestingClient()->client;
-        $newClient = $client->withMiddleware($middleware);
+        $client = $this->createTestingClient()->client->withMiddleware($middleware);
 
-        $this->assertNotSame($client, $newClient);
-        $this->assertSame([], $client->getMiddleware());
-        $this->assertSame(array_reverse($middleware), $newClient->getMiddleware());
+        $this->assertSame(array_reverse($middleware), $client->getMiddleware());
     }
 
     /** @test */

@@ -63,7 +63,7 @@ class MiddlewareDispatcherTest extends BaseTestCase
     }
 
     /** @test */
-    public function can_retrieve_the_middleware()
+    public function can_retrieve_the_middleware_created_through_constructor()
     {
         $middleware = [new BeforeMiddleware(), new AfterMiddleware()];
         $dispatcher = new MiddlewareDispatcher($middleware);
@@ -72,13 +72,13 @@ class MiddlewareDispatcherTest extends BaseTestCase
     }
 
     /** @test */
-    public function changing_the_middleware_returns_a_new_instance()
+    public function can_retrieve_the_middleware_created_through_factory_method()
     {
         $middleware = [new BeforeMiddleware(), new AfterMiddleware()];
         $dispatcher = new MiddlewareDispatcher();
-        $newDispatcher = $dispatcher->withMiddleware($middleware);
+        $dispatcher = $dispatcher->withMiddleware($middleware);
 
-        $this->assertNotsame($dispatcher, $newDispatcher);
+        $this->assertSame(array_reverse($middleware), $dispatcher->getMiddleware());
     }
 
     /** @test */

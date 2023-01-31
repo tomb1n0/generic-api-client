@@ -15,10 +15,9 @@ trait ClientFactoryMethods
      */
     public function withBaseUrl(string $baseUrl): static
     {
-        $copy = clone $this;
-        $copy->baseUrl = $baseUrl;
+        $this->baseUrl = $baseUrl;
 
-        return $copy;
+        return $this;
     }
 
     /**
@@ -39,10 +38,9 @@ trait ClientFactoryMethods
      */
     public function withPaginationHandler(PaginationHandlerContract $paginationHandler): static
     {
-        $copy = clone $this;
-        $copy->paginationHandler = $paginationHandler;
+        $this->paginationHandler = $paginationHandler;
 
-        return $copy;
+        return $this;
     }
 
     /**
@@ -63,10 +61,9 @@ trait ClientFactoryMethods
      */
     public function withMiddleware(array $middleware): static
     {
-        $copy = clone $this;
-        $copy->middlewareDispatcher = $this->middlewareDispatcher->withMiddleware($middleware);
+        $this->middlewareDispatcher = $this->middlewareDispatcher->withMiddleware($middleware);
 
-        return $copy;
+        return $this;
     }
 
     /**

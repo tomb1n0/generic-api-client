@@ -35,10 +35,9 @@ class MiddlewareDispatcher
      */
     public function withMiddleware(array $middleware = []): static
     {
-        $copy = clone $this;
-        $copy->middleware = array_reverse($middleware);
+        $this->middleware = array_reverse($middleware);
 
-        return $copy;
+        return $this;
     }
 
     /**

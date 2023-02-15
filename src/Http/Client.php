@@ -260,7 +260,9 @@ class Client implements ClientContract
             $this->paginationHandler,
         );
 
-        $this->recordedRequests[] = new RecordedRequest($requestResponsePair->request, $response);
+        if ($this->client instanceof FakePsr18Client) {
+            $this->recordedRequests[] = new RecordedRequest($requestResponsePair->request, $response);
+        }
 
         return $response;
     }

@@ -2,8 +2,10 @@
 
 namespace Tomb1n0\GenericApiClient\Tests\Client;
 
+use GuzzleHttp\Psr7\HttpFactory;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Tomb1n0\GenericApiClient\Tests\BaseTestCase;
 use Tomb1n0\GenericApiClient\Http\RecordedRequest;
 use Tomb1n0\GenericApiClient\Exceptions\ClientNotFakedException;
@@ -292,5 +294,24 @@ class FakeTest extends BaseTestCase
         $this->assertCount(1, $recorded);
 
         $this->assertSame('https://foo.com', (string) $recorded[0]->request->getUri());
+    }
+
+    /** @test */
+    public function it_wont_record_requests_if_the_client_hasnt_been_faked()
+    {
+        $mockResponse = $this->responseFactory()->createResponse(200, 'OK');
+
+        $mockClient = $this->mock(ClientInterface::class);
+        $mockClient
+            ->shouldReceive('sendRequest')
+            ->once()
+            ->andReturn($mockResponse);
+
+        $testingClient = $this->createTestingClient(psr18Client: $mockClient);
+        $client = $testingClient->client;
+
+        $client->json('GET', 'https://example.com');
+
+        $this->assertCount(0, $client->recorded());
     }
 }

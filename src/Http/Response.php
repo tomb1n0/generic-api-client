@@ -142,6 +142,11 @@ class Response
         return $this->status() === 403;
     }
 
+    public function notFound(): bool
+    {
+        return $this->status() === 404;
+    }
+
     public function hasNextPage(): bool
     {
         if (isset($this->paginationHandler)) {

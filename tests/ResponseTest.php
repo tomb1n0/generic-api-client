@@ -261,6 +261,16 @@ class ResponseTest extends BaseTestCase
     }
 
     /** @test */
+    public function returns_not_found_if_status_is_404()
+    {
+        $response404 = $this->responseFactory()->createResponse(404);
+        $response401 = $this->responseFactory()->createResponse(401);
+
+        $this->assertFalse($this->createTestResponse(response: $response401)->notFound());
+        $this->assertTrue($this->createTestResponse(response: $response404)->notFound());
+    }
+
+    /** @test */
     public function returns_false_for_has_next_page_if_no_pagination_handler()
     {
         $this->assertFalse($this->createTestResponse()->hasNextPage());

@@ -256,6 +256,31 @@ class ClientTest extends BaseTestCase
     }
 
     /** @test */
+    public function it_will_return_the_same_thing_when_a_stubbed_response_is_retrieved_twice()
+    {
+        $body = ['id' => 1];
+        $streamFactory = $this->mock(StreamFactoryInterface::class, function ($mock) use ($body) {
+            $stream = $this->streamFactory()->createStream(json_encode($body));
+
+            $mock
+                ->shouldReceive('createStream')
+                ->once()
+                ->with(json_encode($body))
+                ->andReturn($stream);
+        });
+
+        $testingClient = $this->createTestingClient(psr7StreamFactory: $streamFactory);
+
+        $fakeClient = $testingClient->client->fake()->stubResponse('https://example.com', $body);
+
+        $response = $fakeClient->json('GET', 'https://example.com');
+        $response2 = $fakeClient->json('GET', 'https://example.com');
+
+        $this->assertSame($body, $response->json());
+        $this->assertSame($body, $response2->json());
+    }
+
+    /** @test */
     public function it_will_use_the_given_stream_factory_when_form_responses_are_stubbed()
     {
         $body = http_build_query(['id' => 1]);

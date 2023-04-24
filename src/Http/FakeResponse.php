@@ -31,7 +31,7 @@ class FakeResponse
     protected array $headers;
 
     /**
-     * The factory to use to create the respones
+     * The factory to use to create the response
      *
      * @var ResponseFactoryInterface
      */
@@ -89,6 +89,8 @@ class FakeResponse
         $response = $this->responseFactory->createResponse($this->status);
 
         if ($this->bodyStream) {
+            // Ensure the body is rewound so the consumer can read the contents of the body if they want to.
+            $this->bodyStream->rewind();
             $response = $response->withBody($this->bodyStream);
         }
 

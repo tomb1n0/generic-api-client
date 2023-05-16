@@ -25,7 +25,7 @@ class FakePsr18Client implements ClientInterface
 
     public function stubResponse(string $url, FakeResponse $fakeResponse): void
     {
-        return $this->stubResponseWithCustomMatcher(new UrlMatcher($url), $fakeResponse);
+        $this->stubResponseWithCustomMatcher(new UrlMatcher($url), $fakeResponse);
     }
 
     public function stubResponseWithCustomMatcher(FakeResponseMatcherContract $matcher, FakeResponse $fakeResponse): void

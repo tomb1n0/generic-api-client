@@ -5,6 +5,7 @@ namespace Tomb1n0\GenericApiClient\Http;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Tomb1n0\GenericApiClient\Matchers\UrlMatcher;
 use Tomb1n0\GenericApiClient\Contracts\FakeResponseMatcherContract;
 use Tomb1n0\GenericApiClient\Exceptions\NoMatchingStubbedResponseException;
 
@@ -22,7 +23,12 @@ class FakePsr18Client implements ClientInterface
         $this->stubs = [];
     }
 
-    public function stubResponse(FakeResponseMatcherContract $matcher, FakeResponse $fakeResponse): void
+    public function stubResponse(string $url, FakeResponse $fakeResponse): void
+    {
+        return $this->stubResponseWithCustomMatcher(new UrlMatcher($url), $fakeResponse);
+    }
+
+    public function stubResponseWithCustomMatcher(FakeResponseMatcherContract $matcher, FakeResponse $fakeResponse): void
     {
         array_push($this->stubs, [
             'matcher' => $matcher,

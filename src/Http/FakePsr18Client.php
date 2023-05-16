@@ -5,6 +5,7 @@ namespace Tomb1n0\GenericApiClient\Http;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Tomb1n0\GenericApiClient\Contracts\FakeResponseMatcherContract;
 use Tomb1n0\GenericApiClient\Exceptions\NoMatchingStubbedResponseException;
 
 class FakePsr18Client implements ClientInterface
@@ -14,27 +15,39 @@ class FakePsr18Client implements ClientInterface
      *
      * @var array<string, FakeResponse>
      */
-    protected array $stubbedResponses = [];
+    protected array $stubs = [];
 
     public function __construct()
     {
-        $this->stubbedResponses = [];
+        $this->stubs = [];
     }
 
-    public function stubResponse(string $url, FakeResponse $fakeResponse): void
+    public function stubResponse(FakeResponseMatcherContract $matcher, FakeResponse $fakeResponse): void
     {
-        $this->stubbedResponses[$url] = $fakeResponse;
+        array_push($this->stubs, [
+            'matcher' => $matcher,
+            'response' => $fakeResponse
+        ]);
+    }
+
+    private function findMatchingResponse(RequestInterface $request): ?FakeResponse {
+        foreach ($this->stubs as $response) {
+            $matcher = $response['matcher'];
+            if ($matcher->match($request)) {
+                return $response['response'];
+            }
+        }
+        return null;
     }
 
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
-        $uri = (string) $request->getUri();
-
-        // Naive approach for now, in the future we might want to stub GET vs POST requests differently, support regexing etc
-        if (isset($this->stubbedResponses[$uri])) {
-            return $this->stubbedResponses[$uri]->toPsr7Response();
+        $response = $this->findMatchingResponse($request);
+        if ($response) {
+            return $response->toPsr7Response();
         }
 
+        $uri = (string) $request->getUri();
         throw new NoMatchingStubbedResponseException('No stubbed response for ' . $uri);
     }
 }

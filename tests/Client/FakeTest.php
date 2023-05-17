@@ -297,7 +297,7 @@ class FakeTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_wont_record_requests_if_the_client_hasnt_been_faked()
+    public function it_wont_record_requests_if_the_client_has_not_been_faked()
     {
         $mockResponse = $this->responseFactory()->createResponse(200, 'OK');
 

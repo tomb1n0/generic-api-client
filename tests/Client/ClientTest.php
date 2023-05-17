@@ -11,7 +11,9 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Tomb1n0\GenericApiClient\Tests\BaseTestCase;
+use Tomb1n0\GenericApiClient\Matchers\UrlMatcher;
 use Tomb1n0\GenericApiClient\Contracts\MiddlewareContract;
+use Tomb1n0\GenericApiClient\Matchers\SequencedUrlMatcher;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
 
 class ClientTest extends BaseTestCase
@@ -256,7 +258,7 @@ class ClientTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_will_return_the_same_thing_when_a_stubbed_response_is_retrieved_twice()
+    public function it_will_return_the_same_thing_by_default_when_a_stubbed_response_is_retrieved_twice()
     {
         $body = ['id' => 1];
         $streamFactory = $this->mock(StreamFactoryInterface::class, function ($mock) use ($body) {
@@ -278,6 +280,28 @@ class ClientTest extends BaseTestCase
 
         $this->assertSame($body, $response->json());
         $this->assertSame($body, $response2->json());
+    }
+
+    /** @test */
+    public function it_will_return_different_stubbed_responses_for_a_sequenced_url_matcher()
+    {
+        $testingClient = $this->createTestingClient();
+
+        $fakeClient = $testingClient->client->fake();
+        $fakeClient->stubResponseWithCustomMatcher(new SequencedUrlMatcher('https://example.com', 'GET'), [
+            'id' => 1,
+            'name' => 'first',
+        ]);
+        $fakeClient->stubResponseWithCustomMatcher(new SequencedUrlMatcher('https://example.com', 'GET'), [
+            'id' => 2,
+            'name' => 'second',
+        ]);
+
+        $actualResponse1 = $fakeClient->json('GET', 'https://example.com');
+        $actualResponse2 = $fakeClient->json('GET', 'https://example.com');
+
+        $this->assertEquals('{"id":1,"name":"first"}', $actualResponse1->getContents());
+        $this->assertEquals('{"id":2,"name":"second"}', $actualResponse2->getContents());
     }
 
     /** @test */

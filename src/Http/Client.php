@@ -15,6 +15,7 @@ use Tomb1n0\GenericApiClient\Contracts\ClientContract;
 use Tomb1n0\GenericApiClient\Http\Traits\ClientFactoryMethods;
 use Tomb1n0\GenericApiClient\Exceptions\ClientNotFakedException;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
+use Tomb1n0\GenericApiClient\Contracts\FakeResponseMatcherContract;
 
 class Client implements ClientContract
 {
@@ -126,11 +127,7 @@ class Client implements ClientContract
      *
      * Please call ->fake() first and call this on the returned client.
      *
-     * @param string $url
-     * @param mixed $body
-     * @param integer $status
      * @param array<string, string> $headers
-     * @return static
      */
     public function stubResponse(string $url, mixed $body = null, int $status = 200, array $headers = []): static
     {
@@ -140,6 +137,31 @@ class Client implements ClientContract
 
         $this->client->stubResponse(
             $url,
+            new FakeResponse($this->responseFactory, $this->streamFactory, $body, $status, $headers),
+        );
+
+        return $this;
+    }
+
+    /**
+     * Stub the given URL with the given fake response.
+     *
+     * Please call ->fake() first and call this on the returned client.
+     *
+     * @param array<string, string> $headers
+     */
+    public function stubResponseWithCustomMatcher(
+        FakeResponseMatcherContract $matcher,
+        mixed $body = null,
+        int $status = 200,
+        array $headers = [],
+    ): static {
+        if (!$this->client instanceof FakePsr18Client) {
+            throw new ClientNotFakedException('Please call ->fake() first.');
+        }
+
+        $this->client->stubResponseWithCustomMatcher(
+            $matcher,
             new FakeResponse($this->responseFactory, $this->streamFactory, $body, $status, $headers),
         );
 

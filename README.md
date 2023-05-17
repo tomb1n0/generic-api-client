@@ -214,6 +214,35 @@ $client->assertSent(function (RequestInterface $request) {
 });
 ```
 
+#### Asserting Requests With Custom Request Matching
+
+Maybe you want to stub a response using some other information in the request
+
+Do the same as above but use the `stubResponseWithCustomMatcher` method providing a custom implementation of the matcher contract.
+For example you could use the included `UrlMatcher` to check the method type
+
+```php
+class UrlMatcher implements FakeResponseMatcherContract
+{
+    public function __construct(private string $url, private ?string $method = "GET")
+    {
+    }
+
+    public function match(RequestInterface $request): bool {
+        $requestUrl = (string) $request->getUri();
+        $requestMethod = $request->getMethod();
+
+        return $this->url === $requestUrl && $this->method === $requestMethod;
+    }
+}
+```
+
+```php
+$client = $existingClient->fake();
+$client->stubResponseWithCustomMatcher(new UrlMatcher('https://dummyjson.com/users', 'GET'), null, 200);
+$client->stubResponseWithCustomMatcher(new UrlMatcher('https://dummyjson.com/users', 'POST'), null, 500);
+```
+
 ## Running the Tests
 
 ```bash

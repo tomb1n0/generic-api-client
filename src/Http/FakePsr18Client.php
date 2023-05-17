@@ -38,6 +38,16 @@ class FakePsr18Client implements ClientInterface
         ]);
     }
 
+    public function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        $response = $this->findMatchingResponse($request);
+        if ($response) {
+            return $response->toPsr7Response();
+        }
+
+        throw new NoMatchingStubbedResponseException('No stubbed response for ' . $request->getUri());
+    }
+
     private function findMatchingResponse(RequestInterface $request): ?FakeResponse
     {
         foreach ($this->stubs as $response) {
@@ -47,16 +57,5 @@ class FakePsr18Client implements ClientInterface
             }
         }
         return null;
-    }
-
-    public function sendRequest(RequestInterface $request): ResponseInterface
-    {
-        $response = $this->findMatchingResponse($request);
-        if ($response) {
-            return $response->toPsr7Response();
-        }
-
-        $uri = (string) $request->getUri();
-        throw new NoMatchingStubbedResponseException('No stubbed response for ' . $uri);
     }
 }

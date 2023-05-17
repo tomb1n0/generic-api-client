@@ -7,7 +7,7 @@ use Tomb1n0\GenericApiClient\Contracts\FakeResponseMatcherContract;
 
 class UrlMatcher implements FakeResponseMatcherContract
 {
-    public function __construct(private string $url, private ?string $method = "GET")
+    public function __construct(private string $url, private ?string $method = 'GET')
     {
     }
 
@@ -15,7 +15,8 @@ class UrlMatcher implements FakeResponseMatcherContract
      * Match a request to fake a response to
      * @param RequestInterface $request Due to PSR-7 requests being immutable, we have to pass by reference here
      */
-    public function match(RequestInterface $request): bool {
+    public function match(RequestInterface $request): bool
+    {
         $requestUrl = (string) $request->getUri();
         $requestMethod = $request->getMethod();
 

@@ -1,8 +1,8 @@
 {
     "private": true,
     "scripts": {
-        "prettier:check": "npx prettier --config=.prettierrc.json --check *.json .*.yml *.yml ./src",
-        "prettier:fix": "npx prettier --config=.prettierrc.json --write *.json .*.yml *.yml ./src"
+        "prettier:check": "npx prettier --config=.prettierrc.json --check *.json *.yml ./src",
+        "prettier:fix": "npx prettier --config=.prettierrc.json --write *.json *.yml ./src"
     },
     "dependencies": {
         "@prettier/plugin-php": "^0.19.2"

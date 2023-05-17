@@ -28,15 +28,18 @@ class FakePsr18Client implements ClientInterface
         $this->stubResponseWithCustomMatcher(new UrlMatcher($url), $fakeResponse);
     }
 
-    public function stubResponseWithCustomMatcher(FakeResponseMatcherContract $matcher, FakeResponse $fakeResponse): void
-    {
+    public function stubResponseWithCustomMatcher(
+        FakeResponseMatcherContract $matcher,
+        FakeResponse $fakeResponse,
+    ): void {
         array_push($this->stubs, [
             'matcher' => $matcher,
-            'response' => $fakeResponse
+            'response' => $fakeResponse,
         ]);
     }
 
-    private function findMatchingResponse(RequestInterface $request): ?FakeResponse {
+    private function findMatchingResponse(RequestInterface $request): ?FakeResponse
+    {
         foreach ($this->stubs as $response) {
             $matcher = $response['matcher'];
             if ($matcher->match($request)) {

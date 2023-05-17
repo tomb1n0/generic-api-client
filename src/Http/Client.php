@@ -150,8 +150,12 @@ class Client implements ClientContract
      *
      * @param array<string, string> $headers
      */
-    public function stubResponseWithCustomMatcher(FakeResponseMatcherContract $matcher, mixed $body = null, int $status = 200, array $headers = []): static
-    {
+    public function stubResponseWithCustomMatcher(
+        FakeResponseMatcherContract $matcher,
+        mixed $body = null,
+        int $status = 200,
+        array $headers = [],
+    ): static {
         if (!$this->client instanceof FakePsr18Client) {
             throw new ClientNotFakedException('Please call ->fake() first.');
         }

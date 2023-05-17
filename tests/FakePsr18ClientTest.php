@@ -154,6 +154,33 @@ class FakePsr18ClientTest extends BaseTestCase
         $this->assertSame($psr7Response, $response);
     }
 
+      /** @test */
+      public function can_stub_a_custom_matcher_with_body_matching_passing_as_an_array()
+      {
+          $client = new FakePsr18Client();
+          $psr7Response = $this->responseFactory()->createResponse();
+
+          $fakeResponse = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response) {
+              $mock
+                  ->shouldReceive('toPsr7Response')
+                  ->once()
+                  ->andReturn($psr7Response);
+          });
+
+          $json = [
+              'id' => 1,
+          ];
+
+          $client->stubResponseWithCustomMatcher(new UrlMatcher('https://example.com', 'POST', $json), $fakeResponse);
+
+          $request = $this->requestFactory()->createRequest('POST', 'https://example.com');
+          $request = $request->withBody(Utils::streamFor(json_encode($json)));
+
+          $response = $client->sendRequest($request);
+
+          $this->assertSame($psr7Response, $response);
+      }
+
     /** @test */
     public function can_stub_a_custom_matcher_with_multiple_body_matches()
     {

@@ -7,7 +7,7 @@ use Tomb1n0\GenericApiClient\Contracts\FakeResponseMatcherContract;
 
 class UrlMatcher implements FakeResponseMatcherContract
 {
-    public function __construct(private string $url, private ?string $method = 'GET')
+    public function __construct(private string $url, private ?string $method = null, private ?string $body = null)
     {
     }
 
@@ -16,9 +16,19 @@ class UrlMatcher implements FakeResponseMatcherContract
      */
     public function match(RequestInterface $request): bool
     {
-        $requestUrl = (string) $request->getUri();
-        $requestMethod = $request->getMethod();
+        if (!is_null($this->body)) {
+            if ($request->getBody()->getContents() !== $this->body) {
+                return false;
+            }
+        }
 
-        return $this->url === $requestUrl && $this->method === $requestMethod;
+        if (!is_null($this->method)) {
+            if ($request->getMethod() !== $this->method) {
+                return false;
+            }
+        }
+
+        $requestUrl = (string) $request->getUri();
+        return $this->url === $requestUrl;
     }
 }

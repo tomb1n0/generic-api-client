@@ -65,7 +65,7 @@ class FakePsr18ClientTest extends BaseTestCase
 
             $this->fail('An exception was not thrown for a non-matching stubbed response');
         } catch (NoMatchingStubbedResponseException $e) {
-            $this->assertSame('No stubbed response for https://example.com', $e->getMessage());
+            $this->assertSame('No stubbed response for GET https://example.com', $e->getMessage());
         }
     }
 
@@ -82,7 +82,7 @@ class FakePsr18ClientTest extends BaseTestCase
 
             $this->fail('An exception was not thrown for a non-matching stubbed response');
         } catch (NoMatchingStubbedResponseException $e) {
-            $this->assertSame('No stubbed response for https://example.com', $e->getMessage());
+            $this->assertSame('No stubbed response for POST https://example.com', $e->getMessage());
         }
     }
 
@@ -217,7 +217,7 @@ class FakePsr18ClientTest extends BaseTestCase
 
             $this->fail('An exception was not thrown for a non-matching stubbed response');
         } catch (NoMatchingStubbedResponseException $e) {
-            $this->assertSame('No stubbed response for https://example.com', $e->getMessage());
+            $this->assertSame('No stubbed response for POST https://example.com', $e->getMessage());
         }
     }
 
@@ -292,7 +292,7 @@ class FakePsr18ClientTest extends BaseTestCase
 
             $this->fail('An exception was not thrown for a non-matching stubbed response');
         } catch (NoMatchingStubbedResponseException $e) {
-            $this->assertSame('No stubbed response for https://example.com', $e->getMessage());
+            $this->assertSame('No stubbed response for POST https://example.com', $e->getMessage());
         }
     }
 
@@ -309,7 +309,7 @@ class FakePsr18ClientTest extends BaseTestCase
 
             $this->fail('An exception was not thrown for a non-matching stubbed response');
         } catch (NoMatchingStubbedResponseException $e) {
-            $this->assertSame('No stubbed response for https://foo.com', $e->getMessage());
+            $this->assertSame('No stubbed response for GET https://foo.com', $e->getMessage());
         }
     }
 }

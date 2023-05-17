@@ -45,7 +45,9 @@ class FakePsr18Client implements ClientInterface
             return $response->toPsr7Response();
         }
 
-        throw new NoMatchingStubbedResponseException('No stubbed response for ' . $request->getUri());
+        throw new NoMatchingStubbedResponseException(
+            'No stubbed response for ' . $request->getMethod() . ' ' . $request->getUri(),
+        );
     }
 
     private function findMatchingResponse(RequestInterface $request): ?FakeResponse

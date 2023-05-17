@@ -54,7 +54,7 @@ class FakeTest extends BaseTestCase
         try {
             $client->json('GET', 'https://example.com');
         } catch (NoMatchingStubbedResponseException $e) {
-            $this->assertSame('No stubbed response for https://example.com', $e->getMessage());
+            $this->assertSame('No stubbed response for GET https://example.com', $e->getMessage());
         }
     }
 

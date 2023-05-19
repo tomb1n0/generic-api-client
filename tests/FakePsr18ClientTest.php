@@ -15,7 +15,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function can_stub_a_get_response()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $psr7Response = $this->responseFactory()->createResponse();
 
         $fakeResponse = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response) {
@@ -35,7 +36,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function can_stub_a_post_response()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $psr7Response = $this->responseFactory()->createResponse();
 
         $fakeResponse = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response) {
@@ -55,7 +57,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function can_ignore_get_request_for_a_post_stub_response()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $fakeResponse = $this->mock(FakeResponse::class);
 
         $client->stubResponseWithCustomMatcher(new UrlMatcher('https://example.com', 'POST'), $fakeResponse);
@@ -72,7 +75,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function can_ignore_post_request_for_a_get_stub_response()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $fakeResponse = $this->mock(FakeResponse::class);
 
         $client->stubResponseWithCustomMatcher(new UrlMatcher('https://example.com', 'GET'), $fakeResponse);
@@ -86,11 +90,11 @@ class FakePsr18ClientTest extends BaseTestCase
         }
     }
 
-
     /** @test */
     public function can_stub_a_custom_matcher_response()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $psr7Response = $this->responseFactory()->createResponse();
 
         $fakeResponse = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response) {
@@ -110,7 +114,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function can_stub_a_custom_matcher_post_response()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $psr7Response = $this->responseFactory()->createResponse();
 
         $fakeResponse = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response) {
@@ -130,7 +135,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function can_stub_a_custom_matcher_with_body_matching()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $psr7Response = $this->responseFactory()->createResponse();
 
         $fakeResponse = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response) {
@@ -144,7 +150,10 @@ class FakePsr18ClientTest extends BaseTestCase
             'id' => 1,
         ];
 
-        $client->stubResponseWithCustomMatcher(new UrlMatcher('https://example.com', 'POST', json_encode($json)), $fakeResponse);
+        $client->stubResponseWithCustomMatcher(
+            new UrlMatcher('https://example.com', 'POST', json_encode($json)),
+            $fakeResponse,
+        );
 
         $request = $this->requestFactory()->createRequest('POST', 'https://example.com');
         $request = $request->withBody(Utils::streamFor(json_encode($json)));
@@ -154,40 +163,42 @@ class FakePsr18ClientTest extends BaseTestCase
         $this->assertSame($psr7Response, $response);
     }
 
-      /** @test */
-      public function can_stub_a_custom_matcher_with_body_matching_passing_as_an_array()
-      {
-          $client = new FakePsr18Client();
-          $psr7Response = $this->responseFactory()->createResponse();
+    /** @test */
+    public function can_stub_a_custom_matcher_with_body_matching_passing_as_an_array()
+    {
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
+        $psr7Response = $this->responseFactory()->createResponse();
 
-          $fakeResponse = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response) {
-              $mock
-                  ->shouldReceive('toPsr7Response')
-                  ->once()
-                  ->andReturn($psr7Response);
-          });
+        $fakeResponse = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response) {
+            $mock
+                ->shouldReceive('toPsr7Response')
+                ->once()
+                ->andReturn($psr7Response);
+        });
 
-          $json = [
-              'id' => 1,
-          ];
+        $json = [
+            'id' => 1,
+        ];
 
-          $client->stubResponseWithCustomMatcher(new UrlMatcher('https://example.com', 'POST', $json), $fakeResponse);
+        $client->stubResponseWithCustomMatcher(new UrlMatcher('https://example.com', 'POST', $json), $fakeResponse);
 
-          $request = $this->requestFactory()->createRequest('POST', 'https://example.com');
-          $request = $request->withBody(Utils::streamFor(json_encode($json)));
+        $request = $this->requestFactory()->createRequest('POST', 'https://example.com');
+        $request = $request->withBody(Utils::streamFor(json_encode($json)));
 
-          $response = $client->sendRequest($request);
+        $response = $client->sendRequest($request);
 
-          $this->assertSame($psr7Response, $response);
-      }
+        $this->assertSame($psr7Response, $response);
+    }
 
     /** @test */
     public function can_stub_a_custom_matcher_with_multiple_body_matches()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
 
-        $psr7Response1 = $this->responseFactory()->createResponse(200, "First response");
-        $psr7Response2 = $this->responseFactory()->createResponse(200, "Second response");
+        $psr7Response1 = $this->responseFactory()->createResponse(200, 'First response');
+        $psr7Response2 = $this->responseFactory()->createResponse(200, 'Second response');
 
         $fakeResponse1 = $this->mock(FakeResponse::class, function ($mock) use ($psr7Response1) {
             $mock
@@ -202,14 +213,20 @@ class FakePsr18ClientTest extends BaseTestCase
                 ->andReturn($psr7Response2);
         });
 
-        $client->stubResponseWithCustomMatcher(new SequencedUrlMatcher('https://example.com', 'POST', json_encode([ 'id' => 1 ])), $fakeResponse1);
-        $client->stubResponseWithCustomMatcher(new SequencedUrlMatcher('https://example.com', 'POST', json_encode([ 'id' => 2 ])), $fakeResponse2);
+        $client->stubResponseWithCustomMatcher(
+            new SequencedUrlMatcher('https://example.com', 'POST', json_encode(['id' => 1])),
+            $fakeResponse1,
+        );
+        $client->stubResponseWithCustomMatcher(
+            new SequencedUrlMatcher('https://example.com', 'POST', json_encode(['id' => 2])),
+            $fakeResponse2,
+        );
 
         $request1 = $this->requestFactory()->createRequest('POST', 'https://example.com');
-        $request1 = $request1->withBody(Utils::streamFor(json_encode([ 'id' => 1 ])));
+        $request1 = $request1->withBody(Utils::streamFor(json_encode(['id' => 1])));
 
         $request2 = $this->requestFactory()->createRequest('POST', 'https://example.com');
-        $request2 = $request2->withBody(Utils::streamFor(json_encode([ 'id' => 2 ])));
+        $request2 = $request2->withBody(Utils::streamFor(json_encode(['id' => 2])));
 
         $response1 = $client->sendRequest($request1);
         $response2 = $client->sendRequest($request2);
@@ -221,12 +238,11 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function can_stub_a_custom_matcher_with_body_not_matched()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
 
         $fakeResponse = $this->mock(FakeResponse::class, function ($mock) {
-            $mock
-                ->shouldReceive('toPsr7Response')
-                ->never();
+            $mock->shouldReceive('toPsr7Response')->never();
         });
 
         $mockedJsonAsString = json_encode([
@@ -236,10 +252,15 @@ class FakePsr18ClientTest extends BaseTestCase
             'id' => 1,
         ]);
 
-        $client->stubResponseWithCustomMatcher(new UrlMatcher('https://example.com', 'POST', $mockedJsonAsString), $fakeResponse);
+        $client->stubResponseWithCustomMatcher(
+            new UrlMatcher('https://example.com', 'POST', $mockedJsonAsString),
+            $fakeResponse,
+        );
 
         try {
-            $request = $this->requestFactory()->createRequest('POST', 'https://example.com')->withBody(Utils::streamFor($jsonAsString));
+            $request = $this->requestFactory()
+                ->createRequest('POST', 'https://example.com')
+                ->withBody(Utils::streamFor($jsonAsString));
             $response = $client->sendRequest($request);
 
             $this->fail('An exception was not thrown for a non-matching stubbed response');
@@ -251,7 +272,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function will_return_multiple_different_responses_for_the_same_match_with_a_sequenced_matcher()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
 
         $expectedResponse1 = $this->responseFactory()->createResponse(200, 'First response');
         $expectedResponse2 = $this->responseFactory()->createResponse(200, 'Second response');
@@ -282,7 +304,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function will_always_return_the_same_response_for_a_match_by_default()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
 
         $expectedResponse1 = $this->responseFactory()->createResponse(200, 'First response');
 
@@ -309,7 +332,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function requesting_something_that_has_not_been_stubbed_in_a_custom_matcher_will_throw_an_exception()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $fakeResponse = $this->mock(FakeResponse::class);
 
         $client->stubResponseWithCustomMatcher(new UrlMatcher('https://example.com', 'GET'), $fakeResponse);
@@ -326,7 +350,8 @@ class FakePsr18ClientTest extends BaseTestCase
     /** @test */
     public function requesting_something_that_has_not_been_stubbed_will_throw_an_exception()
     {
-        $client = new FakePsr18Client();
+        $client = new FakePsr18Client($this->responseFactory());
+        $client->preventStrayRequests();
         $fakeResponse = $this->mock(FakeResponse::class);
 
         $client->stubResponse('https://example.com', $fakeResponse);

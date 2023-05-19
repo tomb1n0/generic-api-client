@@ -117,9 +117,20 @@ class Client implements ClientContract
     public function fake(): static
     {
         $copy = clone $this;
-        $copy->client = new FakePsr18Client();
+        $copy->client = new FakePsr18Client($this->responseFactory);
 
         return $copy;
+    }
+
+    public function preventStrayRequests(): static
+    {
+        if (!$this->client instanceof FakePsr18Client) {
+            throw new ClientNotFakedException('Please call ->fake() first.');
+        }
+
+        $this->client->preventStrayRequests();
+
+        return $this;
     }
 
     /**

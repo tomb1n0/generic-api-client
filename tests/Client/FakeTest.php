@@ -14,7 +14,7 @@ use Tomb1n0\GenericApiClient\Exceptions\NoMatchingStubbedResponseException;
 class FakeTest extends BaseTestCase
 {
     /** @test */
-    public function faking_the_client_prevents_requests_from_being_sent_through_the_provided_psr18_client()
+    public function making_a_request_when_the_client_is_faked_and_not_a_matching_stub_found_will_return_a_200_ok()
     {
         $psr18Client = $this->mock(ClientInterface::class, function ($mock) {
             $mock->shouldNotReceive('sendRequest');
@@ -22,6 +22,22 @@ class FakeTest extends BaseTestCase
 
         $testingClient = $this->createTestingClient(psr18Client: $psr18Client);
         $client = $testingClient->client->fake();
+
+        $response = $client->json('GET', 'https://example.com');
+
+        $this->assertSame(200, $response->status());
+        $this->assertSame('OK', $response->reason());
+    }
+
+    /** @test */
+    public function can_prevent_stray_requests()
+    {
+        $psr18Client = $this->mock(ClientInterface::class, function ($mock) {
+            $mock->shouldNotReceive('sendRequest');
+        });
+
+        $testingClient = $this->createTestingClient(psr18Client: $psr18Client);
+        $client = $testingClient->client->fake()->preventStrayRequests();
 
         $this->expectException(NoMatchingStubbedResponseException::class);
         $client->json('GET', 'https://example.com');
@@ -46,16 +62,28 @@ class FakeTest extends BaseTestCase
     }
 
     /** @test */
-    public function faking_the_client_and_making_a_non_matching_request_will_throw_an_exception()
+    public function faking_the_client_and_making_a_non_matching_request_will_throw_an_exception_when_preventing_stray_requests()
     {
         $testingClient = $this->createTestingClient();
-        $client = $testingClient->client->fake();
+        $client = $testingClient->client->fake()->preventStrayRequests();
 
         try {
             $client->json('GET', 'https://example.com');
         } catch (NoMatchingStubbedResponseException $e) {
             $this->assertSame('No stubbed response for GET https://example.com', $e->getMessage());
         }
+    }
+
+    /** @test */
+    public function faking_the_client_and_making_a_non_matching_request_will_return_a_200_ok_if_not_preventing_stray_requests()
+    {
+        $testingClient = $this->createTestingClient();
+        $client = $testingClient->client->fake();
+
+        $response = $client->json('GET', 'https://example.com');
+
+        $this->assertSame(200, $response->status());
+        $this->assertSame('OK', $response->reason());
     }
 
     /** @test */

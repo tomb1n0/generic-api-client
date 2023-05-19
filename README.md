@@ -193,7 +193,20 @@ if ($response->successful()) {
 }
 ```
 
-Please note that once responses have been stubbed, un-stubbed requests will throw an exception.
+### Preventing Stray Requests
+
+By default the library will return a `200 OK` for any non-matched responses when faked. If you prefer, you can prevent stray requests:
+
+```php
+$client = $existingClient->fake()->preventStrayRequests();
+
+try {
+    // Make a request which has not been stubbed
+    $response = $client->json('GET', 'https://dummyjson.com/products');
+} catch (NoMatchingStubbedResponseException $e) {
+    // a NoMatchingStubbedResponseException exception will be thrown.
+}
+```
 
 #### Asserting Requests
 
@@ -224,11 +237,12 @@ For example you could use the included `UrlMatcher` to check the method type
 ```php
 class UrlMatcher implements FakeResponseMatcherContract
 {
-    public function __construct(private string $url, private ?string $method = "GET")
+    public function __construct(private string $url, private ?string $method = 'GET')
     {
     }
 
-    public function match(RequestInterface $request): bool {
+    public function match(RequestInterface $request): bool
+    {
         $requestUrl = (string) $request->getUri();
         $requestMethod = $request->getMethod();
 

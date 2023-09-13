@@ -130,4 +130,37 @@ class FormTest extends BaseTestCase
 
         $testingClient->client->form($verb, $url, ['active' => 1, 'page' => 12]);
     }
+
+    /**
+     * @test
+     * @dataProvider httpVerbsProvider
+     */
+    public function can_provide_custom_headers(string $verb)
+    {
+        $url = 'https://example.com';
+
+        $testingClient = $this->createTestingClient();
+        $psr7Request = null;
+
+        $psr7Response = $this->expectSendRequest($testingClient, function (RequestInterface $request) use (
+            $url,
+            $verb,
+            &$psr7Request,
+        ) {
+            $this->assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+            $this->assertSame('Custom Value', $request->getHeaderLine('X-Custom-Header'));
+
+            $this->assertSame($verb, strtoupper($request->getMethod()));
+            $this->assertSame($url, (string) $request->getUri());
+
+            $psr7Request = $request;
+
+            return true;
+        });
+
+        $response = $testingClient->client->form($verb, $url, [], ['X-Custom-Header' => 'Custom Value']);
+
+        $this->assertSame($psr7Request, $response->toPsr7Request());
+        $this->assertSame($psr7Response, $response->toPsr7Response());
+    }
 }

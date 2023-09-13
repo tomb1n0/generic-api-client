@@ -231,7 +231,7 @@ class Client implements ClientContract
      *
      * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
      */
-    public function json(string $method, string $url, array $params = []): Response
+    public function json(string $method, string $url, array $params = [], array $headers = []): Response
     {
         $method = strtoupper($method);
 
@@ -239,6 +239,10 @@ class Client implements ClientContract
             ->createRequest($method, $this->buildUrl($method, $url, $params))
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Accept', 'application/json');
+
+        foreach ($headers as $key => $value) {
+            $request = $request->withHeader($key, $value);
+        }
 
         if ($method !== 'GET') {
             $request = $request->withBody($this->streamFactory->createStream(json_encode($params)));
@@ -257,13 +261,17 @@ class Client implements ClientContract
      *
      * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
      */
-    public function form(string $method, string $url, array $params = []): Response
+    public function form(string $method, string $url, array $params = [], array $headers = []): Response
     {
         $method = strtoupper($method);
 
         $request = $this->requestFactory
             ->createRequest($method, $this->buildUrl($method, $url, $params))
             ->withHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        foreach ($headers as $key => $value) {
+            $request = $request->withHeader($key, $value);
+        }
 
         if ($method !== 'GET') {
             $request = $request->withBody($this->streamFactory->createStream(http_build_query($params)));

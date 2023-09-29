@@ -63,7 +63,13 @@ class Response
         $this->response = $response;
         $this->paginationHandler = $paginationHandler;
 
-        $this->contents = $this->response->getBody()->getContents();
+        $this->contents = (string) $this->response->getBody();
+
+        /**
+         * Now we've fetched the contents, rewind the stream to ensure anyone fetching the PSR-7 response
+         * can read the body correctly without having to rewind first.
+         */
+        $this->response->getBody()->rewind();
     }
 
     public function toPsr7Request(): RequestInterface
@@ -73,9 +79,6 @@ class Response
 
     public function toPsr7Response(): ResponseInterface
     {
-        // Ensure the body is rewound so the consumer can read the contents of the body if they want to.
-        $this->response->getBody()->rewind();
-
         return $this->response;
     }
 

@@ -43,7 +43,7 @@ class UrlMatcher implements FakeResponseMatcherContract
             return false;
         }
 
-        return $this->body !== $request->getBody()->getContents();
+        return $this->body != $request->getBody()->getContents();
     }
 
     private function requestMethodDifferent(RequestInterface $request): bool

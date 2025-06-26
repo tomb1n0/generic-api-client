@@ -227,6 +227,14 @@ class ResponseTest extends BaseTestCase
     }
 
     /** @test */
+    public function returns_bad_request_if_status_is_400()
+    {
+        $response400 = $this->responseFactory()->createResponse(400);
+
+        $this->assertTrue($this->createTestResponse(response: $response400)->badRequest());
+    }
+
+    /** @test */
     public function returns_redirect_if_status_between_300_and_400()
     {
         $response299 = $this->responseFactory()->createResponse(299);

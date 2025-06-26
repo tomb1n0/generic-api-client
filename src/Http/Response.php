@@ -135,6 +135,11 @@ class Response
         return $this->status() >= 300 && $this->status() < 400;
     }
 
+    public function badRequest(): bool
+    {
+        return $this->status() === 400;
+    }
+    
     public function unauthorized(): bool
     {
         return $this->status() === 401;

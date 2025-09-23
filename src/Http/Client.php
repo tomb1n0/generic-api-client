@@ -206,7 +206,7 @@ class Client implements ClientContract
      *
      * @return array<int, RecordedRequest>
      */
-    public function recorded(callable $filterCallback = null): array
+    public function recorded(?callable $filterCallback = null): array
     {
         if ($filterCallback) {
             $filteredRequests = array_filter($this->recordedRequests, function (RecordedRequest $recordedRequest) use (

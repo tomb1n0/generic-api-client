@@ -11,7 +11,6 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Tomb1n0\GenericApiClient\Tests\BaseTestCase;
-use Tomb1n0\GenericApiClient\Matchers\UrlMatcher;
 use Tomb1n0\GenericApiClient\Contracts\MiddlewareContract;
 use Tomb1n0\GenericApiClient\Matchers\SequencedUrlMatcher;
 use Tomb1n0\GenericApiClient\Contracts\PaginationHandlerContract;
